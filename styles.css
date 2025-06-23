@@ -1,0 +1,48 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #f4f4f4;
+}
+h1 { text-align: center; }
+.upload-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+#tablesContainer {
+  margin-top: 20px;
+}
+.sport-table {
+  margin: 30px auto;
+  border-collapse: collapse;
+  width: 90%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.sport-table th, .sport-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+.sport-table th {
+  background: #1e90ff;
+  color: white;
+}
+.delete-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.delete-btn:hover {
+  background: #c0392b;
+}
+footer {
+  text-align: center;
+  margin: 30px 0 10px 0;
+  color: #999;
+}

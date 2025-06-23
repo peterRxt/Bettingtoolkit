@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Football Match Filter & Export</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Lato, Arial, sans-serif; padding: 15px; background: #f8f8f8; }
+    h1 { font-size: 1.4em; }
+    input, button, select { margin: 5px 0; padding: 7px; border-radius: 5px; border: 1px solid #aaa; }
+    table { width: 100%; border-collapse: collapse; margin: 18px 0 8px 0; background: #fff; box-shadow: 0 3px 12px #dedede; }
+    th, td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; }
+    th { background: #1a237e; color: #fff; border-bottom: 2px solid #0d133a; font-weight: 600; letter-spacing: 0.03em;}
+    tr:nth-child(even) { background: #f7f8fa; }
+    tr:hover { background: #e3e9f6; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; }
+    .controls > div { min-width: 180px; }
+    .delete-btn { background: #d33; color: #fff; border: none; border-radius: 3px; padding: 5px 16px; cursor: pointer; font-weight: 600;}
+    .delete-btn:hover { background: #b00; }
+    #exportBtn, #filterBtn { background: #1976d2; color: #fff; border: none; }
+    #exportBtn:hover, #filterBtn:hover { background: #0d47a1; }
+    @media (max-width: 700px) {
+      .controls { flex-direction: column; }
+      th, td { padding: 10px 3px; font-size: 0.96em; }
+      h1 { font-size: 1.1em; }
+    }
+    @media (max-width: 500px) {
+      table, thead, tbody, th, td, tr { display: table-header-group; }
+      th, td { padding: 7px; }
+      th { background: #1a237e; color: #fff; font-size: 1em; }
+      td { border-bottom: 1px solid #ddd; }
+      tr { margin-bottom: 0; }
+    }
+    .odds-product { margin: 18px 0 8px 0; font-weight: bold; font-size: 1.1em; }
+  </style>
+</head>
+<body>
+  <h1>Football Match Filter & Export</h1>
+  <div class="controls">
+    <div>
+      <label>Upload HTML File: <input type="file" id="fileInput" accept=".html,.htm" /></label>
+    </div>
+    <div>
+      <label>Prob Difference &gt; <input type="number" id="probDiff" value="40" min="0" style="width:60px;"></label>
+    </div>
+    <div>
+      <label>Pred Difference &ge; <input type="number" id="predDiff" value="2" min="0" style="width:60px;"></label>
+    </div>
+    <div>
+      <button id="filterBtn">Filter</button>
+      <button id="exportBtn">Export PDF</button>
+    </div>
+  </div>
+  <div class="odds-product" id="oddsProduct">Multibet Odds Product: -</div>
+  <div style="overflow-x:auto;">
+    <table id="resultsTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Home</th>
+          <th>Away</th>
+          <th>Odds</th>
+          <th>Prediction</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    let matches = [];
+    let filteredMatches = [];
+
+    function extractProbabilities(haoddSpans) {
+      let probs = [];
+      for (let i = 0; i < 3; ++i) {
+        let v = haoddSpans[i]?.textContent?.replace('%','').trim();
+        let n = parseFloat(v);
+        probs.push(Number.isFinite(n) ? n : null);
+      }
+      return probs;
+    }
+
+    function getPredDiff(predStr) {
+      if (!predStr) return null;
+      let m = predStr.match(/([0-9]+)\s*-\s*([0-9]+)/);
+      if (m) {
+        let diff = parseInt(m[1],10) - parseInt(m[2],10);
+        return diff;
+      }
+      return null;
+    }
+
+    function parseHTMLMatchData(html) {
+      let doc = new DOMParser().parseFromString(html, 'text/html');
+      let rows = [];
+      let schemaDiv = doc.querySelector('.schema');
+      if (!schemaDiv) return [];
+      let matchDivs = schemaDiv.querySelectorAll('.rcnt');
+      let dateStr = doc.querySelector('.heading')?.textContent?.trim() || '';
+      matchDivs.forEach(div => {
+        try {
+          let matchTime = div.querySelector('time .date_bah')?.textContent?.trim() || '';
+          let home = div.querySelector('.homeTeam span[itemprop="name"]')?.textContent?.trim() || '';
+          let away = div.querySelector('.awayTeam span[itemprop="name"]')?.textContent?.trim() || '';
+          let haoddSpans = div.querySelectorAll('.haodd > span');
+          let [prob1, probX, prob2] = extractProbabilities(haoddSpans);
+          let coef = null;
+          let coefStr = div.querySelector('.la_prmod .lcurodd')?.textContent?.trim();
+          if (coefStr && coefStr !== '-' && coefStr !== 'no') {
+            let c = parseFloat(coefStr);
+            coef = Number.isFinite(c) ? c : null;
+          }
+          if (!coef) {
+            for (let s of haoddSpans) {
+              let v = parseFloat(s.textContent);
+              if (!isNaN(v) && v > 1.01) { coef = v; break; }
+            }
+          }
+          let predCell = div.querySelector('.ex_sc') || div.querySelector('.predict') || null;
+          let predText = '';
+          if (predCell) predText = predCell.textContent.trim();
+          if (typeof coef !== 'number' || isNaN(coef) || !home || !away) return;
+          let predDiff = getPredDiff(predText);
+          rows.push({
+            date: dateStr,
+            time: matchTime,
+            home, away,
+            prob1, probX, prob2,
+            coef,
+            pred: predText,
+            predDiff
+          });
+        } catch (e) {}
+      });
+      return rows;
+    }
+
+    function filterMatches(probDiffInput, predDiffInput) {
+      return matches.filter(m => {
+        if ([m.prob1, m.prob2, m.probX].some(x => typeof x !== 'number')) return false;
+        let prob_diff_1 = Math.abs(m.prob1 - (m.prob2 + m.probX));
+        let prob_diff_2 = Math.abs(m.prob2 - (m.prob1 + m.probX));
+        let passProb = (prob_diff_1 > probDiffInput) || (prob_diff_2 > probDiffInput);
+        let passPred = (m.predDiff !== null) && (m.predDiff >= predDiffInput);
+        return passProb && passPred;
+      });
+    }
+
+    function renderTable() {
+      const table = document.getElementById('resultsTable');
+      const tbody = table.querySelector('tbody');
+      tbody.innerHTML = '';
+      filteredMatches.forEach((m, i) => {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `<td>${m.date}</td>
+          <td>${m.time}</td>
+          <td style="font-weight:600;">${m.home}</td>
+          <td style="font-weight:600;">${m.away}</td>
+          <td style="color:#154fa0;font-weight:600;">${m.coef}</td>
+          <td>${m.pred || ''}</td>
+          <td><button class="delete-btn" data-idx="${i}">Delete</button></td>`;
+        tbody.appendChild(tr);
+      });
+      table.style.display = filteredMatches.length ? '' : 'none';
+      document.getElementById('oddsProduct').textContent = filteredMatches.length
+        ? "Multibet Odds Product: " + filteredMatches.reduce((prod, m) => prod * m.coef, 1).toFixed(2)
+        : "Multibet Odds Product: -";
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      let file = e.target.files[0];
+      if (!file) return;
+      let reader = new FileReader();
+      reader.onload = function(evt) {
+        matches = parseHTMLMatchData(evt.target.result);
+        filteredMatches = [];
+        renderTable();
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById('filterBtn').addEventListener('click', function() {
+      let probDiff = parseFloat(document.getElementById('probDiff').value) || 0;
+      let predDiff = parseFloat(document.getElementById('predDiff').value) || 0;
+      filteredMatches = filterMatches(probDiff, predDiff);
+      renderTable();
+    });
+
+    document.getElementById('resultsTable').addEventListener('click', function(e) {
+      if (e.target.classList.contains('delete-btn')) {
+        let idx = parseInt(e.target.getAttribute('data-idx'));
+        filteredMatches.splice(idx, 1);
+        renderTable();
+      }
+    });
+
+    // PDF Export (removed date column, added prediction, added total odds)
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      if (!filteredMatches.length) {
+        alert('No filtered matches to export!');
+        return;
+      }
+      let { jsPDF } = window.jspdf;
+      let doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+      let y = 60, lineH = 24, left = 30;
+      doc.setFontSize(15);
+      doc.text("Filtered Matches (" + new Date().toLocaleString() + ")", left, y-26);
+      doc.setFontSize(11);
+
+      // Table headers (Time, Home, Away, Odds, Prediction)
+      doc.setFillColor(26,35,126);
+      doc.setTextColor(255,255,255);
+      doc.rect(left, y-12, 460, lineH, 'F');
+      doc.text("Time", left+7, y+5);
+      doc.text("Home", left+70, y+5);
+      doc.text("Away", left+190, y+5);
+      doc.text("Odds", left+300, y+5);
+      doc.text("Prediction", left+360, y+5);
+
+      y += lineH;
+      doc.setTextColor(30,30,30);
+
+      filteredMatches.forEach(m => {
+        if (y > 780) {
+          doc.addPage();
+          y = 40 + lineH;
+          doc.setFillColor(26,35,126);
+          doc.setTextColor(255,255,255);
+          doc.rect(left, y-12, 460, lineH, 'F');
+          doc.text("Time", left+7, y+5);
+          doc.text("Home", left+70, y+5);
+          doc.text("Away", left+190, y+5);
+          doc.text("Odds", left+300, y+5);
+          doc.text("Prediction", left+360, y+5);
+          y += lineH;
+          doc.setTextColor(30,30,30);
+        }
+        doc.text(String(m.time), left+7, y+5);
+        doc.text(String(m.home), left+70, y+5, {maxWidth: 110});
+        doc.text(String(m.away), left+190, y+5, {maxWidth: 100});
+        doc.text(String(m.coef), left+300, y+5);
+        doc.text(String(m.pred || '-'), left+360, y+5, {maxWidth: 90});
+        y += lineH;
+      });
+      
+      // Add total odds at the bottom
+      const totalOdds = filteredMatches.reduce((prod, m) => prod * m.coef, 1).toFixed(2);
+      y += 10;
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text("Total Bet Slip Odds: " + totalOdds, left, y+5);
+      
+      doc.save('filtered-matches.pdf');
+    });
+  </script>
+</body>
+</html>
