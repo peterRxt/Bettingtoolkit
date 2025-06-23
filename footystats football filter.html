@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>UPLOAD MHTML FROM FOOTYSTATS</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Roboto', sans-serif; background: #f5f7fa; margin: 0; color: #222; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+    h1 { text-align: center; margin-bottom: 2rem; }
+    .controls { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 1.5rem; background: #fff; padding: 1rem; border-radius: 12px; box-shadow: 0 2px 8px #1e88e508; }
+    .controls label { font-size: 1rem; font-weight: 500; margin-right: 0.4em; }
+    .controls input[type="number"] { width: 65px; padding: 0.3em 0.5em; font-size: 1rem; border-radius: 6px; border: 1px solid #e0e0e0; margin-right: 0.6em; }
+    .controls input[type="file"] { display: none; }
+    .custom-file-upload { border: 1px solid #1e88e5; border-radius: 6px; padding: 0.5em 1em; color: #1e88e5; cursor: pointer; background: #fafdff; transition: background .2s; }
+    .custom-file-upload:hover { background: #1e88e5; color: #fff; }
+    .controls button, .controls .custom-file-upload { font-size: 1rem; padding: 0.5em 1.5em; border-radius: 6px; border: none; background: #1e88e5; color: #fff; cursor: pointer; font-weight: 600; transition: background .2s; }
+    .controls button.secondary { background: #43a047; }
+    .controls button.danger { background: #e53935; }
+    .controls button:disabled { opacity: 0.7; cursor: not-allowed; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px #1e88e508; margin-bottom: 2rem; }
+    thead { background: #1e88e5; color: #fff; }
+    th, td { padding: 0.7em 0.6em; text-align: center; border-bottom: 1px solid #e0e0e0; }
+    th { font-weight: 600; letter-spacing: 0.02em; }
+    td input[type="number"] { width: 70px; padding: 0.25em 0.5em; font-size: 1em; border-radius: 5px; border: 1px solid #e0e0e0; text-align: right; }
+    .delete-btn { background: #e53935; color: #fff; border: none; border-radius: 6px; padding: 0.3em 0.9em; font-size: 1em; cursor: pointer; transition: background .2s; }
+    .delete-btn:hover { background: #b71c1c; }
+    .odds-missing input[type="number"] { border: 2px solid #43a047; background: #e8f5e9; }
+    .odds-missing input[type="number"]:focus { outline: 2px solid #43a047; }
+    .accumulated-odds { display: flex; align-items: center; gap: 0.7em; font-size: 1.15em; font-weight: 500; background: #fff; padding: 1em; border-radius: 10px; box-shadow: 0 2px 8px #43a0470f; margin-bottom: 2rem; justify-content: flex-end; }
+    .export-btn { display: flex; align-items: center; gap: .7em; font-size: 1em; padding: 0.5em 1.5em; background: #43a047; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 2px 8px #43a0470f; transition: background .2s; }
+    .export-btn:hover { background: #388e3c; }
+    .notes { margin: 2em 0 1em 0; color: #757575; font-size: 1em; text-align: right; }
+    @media (max-width: 900px) { .controls { flex-direction: column; align-items: stretch; } table, thead, tbody, th, td, tr { font-size: 0.96em; } }
+    @media (max-width: 600px) { .container { padding: 0.5rem 0.2rem; } .accumulated-odds, .notes { font-size: 0.98em; } th, td { padding: 0.5em 0.2em; } .export-btn, .controls button, .controls .custom-file-upload { font-size: 0.95em; padding: 0.4em 0.8em; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>UPLOAD MHTML FROM FOOTYSTATS</h1>
+    <div class="controls">
+      <label for="file-upload" class="custom-file-upload">
+        <input id="file-upload" type="file" accept=".html,.htm,.mhtml">Upload Match File
+      </label>
+      <label>
+        Min Form Diff:
+        <input type="number" id="min-form-diff" value="1" min="0" step="0.01">
+      </label>
+      <label>
+        Home Form Min:
+        <input type="number" id="min-home-form" value="0" min="0" step="0.01">
+      </label>
+      <label>
+        Away Form Min:
+        <input type="number" id="min-away-form" value="0" min="0" step="0.01">
+      </label>
+      <button id="apply-filter" title="Apply Filters">Filter</button>
+      <button id="reset-filter" class="secondary" title="Show All">Reset</button>
+      <button id="clear-all" class="danger" title="Delete All">Clear All</button>
+      <button class="export-btn" id="export-pdf">
+        <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"></rect><path d="M8 7v6M12 7v6"></path></svg>
+        Export as PDF
+      </button>
+      <button class="export-btn" id="export-csv" style="background:#f9a825;color:#222;">
+        <svg width="20" height="20" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"></rect><path d="M7 7h6M7 10h6M7 13h6"></path></svg>
+        Export as CSV
+      </button>
+      <button class="export-btn" id="export-png" style="background:#1e88e5;">
+        <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"></rect><path d="M8 8h4v4H8z"></path></svg>
+        Export as PNG
+      </button>
+      <button class="export-btn" id="send-telegram" style="background:#0088cc;">
+        <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="2 10 18 2 15 18 10 14 6 17 8 11 2 10"></polygon></svg>
+        Send PDF to Telegram
+      </button>
+    </div>
+    <div class="accumulated-odds">
+      <span>Accumulated Odds:</span>
+      <span id="accumulated-odds-value">0.00</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="matches-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Home Team</th>
+            <th>Home Form</th>
+            <th></th>
+            <th>Away Form</th>
+            <th>Away Team</th>
+            <th>Form Diff</th>
+            <th>Odds</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+    <div class="notes">
+      <strong>Note:</strong> PDF will be time & date stamped, QR code added, and "Generated by Peter".
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    function parseMatchDataFromHTML(html) {
+      const dom = document.createElement('div');
+      dom.innerHTML = html;
+      const matchLinks = dom.querySelectorAll('a.match.row, a.match.row.cf');
+      const matches = [];
+      matchLinks.forEach(matchEl => {
+        let dateTimeEpoch = null;
+        let parent = matchEl.closest('[data-time]');
+        if (!parent) parent = matchEl.querySelector('[data-time]');
+        if (parent) dateTimeEpoch = parent.getAttribute('data-time');
+        let dateStr = '', timeStr = '';
+        if (dateTimeEpoch) {
+          const dt = new Date(parseInt(dateTimeEpoch, 10) * 1000);
+          dateStr = dt.toISOString().slice(0,10);
+          timeStr = dt.toTimeString().slice(0,5);
+        }
+        let homeTeam = '';
+        let homeForm = '';
+        const homeDiv = matchEl.querySelector('.team.home span');
+        if (homeDiv) homeTeam = homeDiv.textContent.trim();
+        const homeFormBox = matchEl.querySelector('.team.home .form-box');
+        if (homeFormBox) homeForm = homeFormBox.textContent.trim();
+        let awayTeam = '';
+        let awayForm = '';
+        const awayDiv = matchEl.querySelector('.team.away span');
+        if (awayDiv) awayTeam = awayDiv.textContent.trim();
+        const awayFormBox = matchEl.querySelector('.team.away .form-box');
+        if (awayFormBox) awayForm = awayFormBox.textContent.trim();
+        let odds = '';
+        let oddsBlock = matchEl.querySelector('.stat.odds');
+        if (oddsBlock) {
+          const oddsSpans = oddsBlock.querySelectorAll('span.col-lg-4, span.col-sm-4');
+          if (oddsSpans.length === 3) {
+            odds = [oddsSpans[0].textContent.trim(), oddsSpans[1].textContent.trim(), oddsSpans[2].textContent.trim()];
+          }
+        }
+        if (homeTeam && awayTeam && homeForm && awayForm) {
+          matches.push({
+            date: dateStr,
+            time: timeStr,
+            homeTeam,
+            homeForm: parseFloat(homeForm) || 0,
+            awayTeam,
+            awayForm: parseFloat(awayForm) || 0,
+            odds: odds && odds.length === 3 ? odds : ['', '', ''],
+            id: Math.random().toString(36).substr(2,9)
+          });
+        }
+      });
+      return matches;
+    }
+
+    let matches = [];
+    let filteredMatches = [];
+    let filterConfig = {
+      minFormDiff: 1,
+      minHomeForm: 0,
+      minAwayForm: 0
+    };
+
+    const fileInput = document.getElementById('file-upload');
+    const minFormDiffInput = document.getElementById('min-form-diff');
+    const minHomeFormInput = document.getElementById('min-home-form');
+    const minAwayFormInput = document.getElementById('min-away-form');
+    const filterBtn = document.getElementById('apply-filter');
+    const resetBtn = document.getElementById('reset-filter');
+    const clearBtn = document.getElementById('clear-all');
+    const matchesTableBody = document.querySelector('#matches-table tbody');
+    const accumulatedOddsEl = document.getElementById('accumulated-odds-value');
+    const exportPdfBtn = document.getElementById('export-pdf');
+    const exportCsvBtn = document.getElementById('export-csv');
+    const exportPngBtn = document.getElementById('export-png');
+    const sendTelegramBtn = document.getElementById('send-telegram');
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const html = event.target.result;
+        matches = parseMatchDataFromHTML(html);
+        // Reset filter inputs to default or last used values
+        minFormDiffInput.value = filterConfig.minFormDiff;
+        minHomeFormInput.value = filterConfig.minHomeForm;
+        minAwayFormInput.value = filterConfig.minAwayForm;
+        filteredMatches = [...matches];
+        renderMatchTable();
+      };
+      reader.readAsText(file);
+    });
+
+    filterBtn.addEventListener('click', applyFilter);
+    resetBtn.addEventListener('click', () => {
+      filteredMatches = [...matches];
+      renderMatchTable();
+    });
+    clearBtn.addEventListener('click', () => {
+      matches = [];
+      filteredMatches = [];
+      renderMatchTable();
+    });
+
+    minFormDiffInput.addEventListener('input', applyFilter);
+    minHomeFormInput.addEventListener('input', applyFilter);
+    minAwayFormInput.addEventListener('input', applyFilter);
+
+    function applyFilter() {
+      filterConfig.minFormDiff = parseFloat(minFormDiffInput.value) || 0;
+      filterConfig.minHomeForm = parseFloat(minHomeFormInput.value) || 0;
+      filterConfig.minAwayForm = parseFloat(minAwayFormInput.value) || 0;
+      filteredMatches = matches.filter(m => {
+        const formDiff = Math.abs(m.homeForm - m.awayForm);
+        return (
+          formDiff >= filterConfig.minFormDiff &&
+          m.homeForm >= filterConfig.minHomeForm &&
+          m.awayForm >= filterConfig.minAwayForm
+        );
+      });
+      renderMatchTable();
+    }
+
+    function deleteMatch(matchId) {
+      matches = matches.filter(m => m.id !== matchId);
+      filteredMatches = filteredMatches.filter(m => m.id !== matchId);
+      renderMatchTable();
+    }
+
+    function renderMatchTable() {
+      matchesTableBody.innerHTML = '';
+      filteredMatches.forEach((match, idx) => {
+        const formDiff = Math.abs(match.homeForm - match.awayForm);
+        let oddsVal = parseFloat(match.odds[0]);
+        let oddsMissing = isNaN(oddsVal) || oddsVal <= 1.01;
+        matchesTableBody.innerHTML += `
+          <tr data-id="${match.id}" ${oddsMissing ? 'class="odds-missing"' : ''}>
+            <td>${match.date}</td>
+            <td>${match.time}</td>
+            <td>${match.homeTeam}</td>
+            <td><input type="number" class="home-form" step="0.01" value="${match.homeForm}"></td>
+            <td>vs</td>
+            <td><input type="number" class="away-form" step="0.01" value="${match.awayForm}"></td>
+            <td>${match.awayTeam}</td>
+            <td class="form-diff">${formDiff.toFixed(2)}</td>
+            <td><input type="number" class="odds" min="1.01" step="0.01" value="${oddsVal || ''}" placeholder="Input"></td>
+            <td><button class="delete-btn">Delete</button></td>
+          </tr>
+        `;
+      });
+      // Attach listeners
+      matchesTableBody.querySelectorAll('tr').forEach(tr => {
+        const id = tr.getAttribute('data-id');
+        tr.querySelector('.home-form').addEventListener('input', e => {
+          const v = parseFloat(e.target.value) || 0;
+          let m = filteredMatches.find(m => m.id === id);
+          m.homeForm = v;
+          let gm = matches.find(m => m.id === id);
+          if (gm) gm.homeForm = v;
+          tr.querySelector('.form-diff').textContent = Math.abs(m.homeForm - m.awayForm).toFixed(2);
+          recalculateAccumulatedOdds();
+        });
+        tr.querySelector('.away-form').addEventListener('input', e => {
+          const v = parseFloat(e.target.value) || 0;
+          let m = filteredMatches.find(m => m.id === id);
+          m.awayForm = v;
+          let gm = matches.find(m => m.id === id);
+          if (gm) gm.awayForm = v;
+          tr.querySelector('.form-diff').textContent = Math.abs(m.homeForm - m.awayForm).toFixed(2);
+          recalculateAccumulatedOdds();
+        });
+        tr.querySelector('.odds').addEventListener('input', e => {
+          const v = parseFloat(e.target.value) || '';
+          let m = filteredMatches.find(m => m.id === id);
+          m.odds[0] = v;
+          let gm = matches.find(m => m.id === id);
+          if (gm) gm.odds[0] = v;
+          recalculateAccumulatedOdds();
+        });
+        tr.querySelector('.delete-btn').addEventListener('click', () => {
+          deleteMatch(id);
+        });
+      });
+      recalculateAccumulatedOdds();
+    }
+
+    function recalculateAccumulatedOdds() {
+      let acc = 1.0;
+      let valid = false;
+      filteredMatches.forEach(m => {
+        let odds = parseFloat(m.odds[0]);
+        if (!isNaN(odds) && odds > 1.01) {
+          acc *= odds;
+          valid = true;
+        }
+      });
+      accumulatedOddsEl.textContent = valid ? acc.toFixed(2) : '0.00';
+    }
+
+    function syncTableToMatches() {
+      matchesTableBody.querySelectorAll('tr').forEach(tr => {
+        const id = tr.getAttribute('data-id');
+        let m = filteredMatches.find(m => m.id === id);
+        if (!m) return;
+        m.homeForm = parseFloat(tr.querySelector('.home-form').value) || 0;
+        m.awayForm = parseFloat(tr.querySelector('.away-form').value) || 0;
+        m.odds[0] = parseFloat(tr.querySelector('.odds').value) || '';
+      });
+    }
+
+    // --- EXPORT PDF/CSV/PNG/TELEGRAM LOGIC ---
+
+    let lastPdfBlob = null;
+    let lastPdfName = '';
+
+    exportPdfBtn.addEventListener('click', function() {
+      if (!filteredMatches.length) return alert('No matches to export');
+      syncTableToMatches();
+      generatePDF(filteredMatches);
+    });
+
+    exportCsvBtn.addEventListener('click', function() {
+      if (!filteredMatches.length) return alert('No matches to export');
+      syncTableToMatches();
+      generateCSV(filteredMatches);
+    });
+
+    exportPngBtn.addEventListener('click', function() {
+      html2canvas(document.querySelector("#matches-table"), {backgroundColor: null}).then(canvas => {
+        let link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = 'multibet_table.png';
+        link.click();
+      });
+    });
+
+    sendTelegramBtn.addEventListener('click', function() {
+      if (!filteredMatches.length) return alert('No matches to export');
+      syncTableToMatches();
+      generatePDF(filteredMatches, function(blob, filename) {
+        sendPdfToTelegram(blob, filename);
+      });
+    });
+
+    function generatePDF(matches, cb) {
+      const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const now = new Date();
+      const dateStr = now.toLocaleDateString();
+      const timeStr = now.toLocaleTimeString();
+      let qr = new window.QRious({
+        value: `Generated by Peter on ${dateStr} at ${timeStr}`,
+        size: 90
+      });
+      doc.addImage(qr.toDataURL(), 'PNG', 40, 18, 70, 70);
+      doc.setFontSize(19);
+      doc.setTextColor(30,136,229);
+      doc.text('Football Multibet Slip', 140, 48);
+      doc.setFontSize(11);
+      doc.setTextColor(67,160,71);
+      doc.text(`Generated by Peter`, 140, 68);
+      doc.setTextColor(44,44,44);
+      doc.text(`Date: ${dateStr}  Time: ${timeStr}`, 140, 88);
+      const startY = 105;
+      let colX = [40, 110, 180, 340, 410, 470, 570, 660, 730, 820];
+      doc.setFontSize(10);
+      doc.setFillColor(30,136,229);
+      doc.setTextColor(255,255,255);
+      doc.rect(40, startY, 790, 25, 'F');
+      doc.text(['Date','Time','Home','Home Form','vs','Away Form','Away','Form Diff','Odds',''], colX, startY+17);
+      doc.setFontSize(10);
+      doc.setTextColor(44,44,44);
+      let y = startY + 34;
+      matches.forEach(m => {
+        const formDiff = Math.abs(m.homeForm - m.awayForm);
+        doc.text(m.date, colX[0], y);
+        doc.text(m.time, colX[1], y);
+        doc.text(m.homeTeam, colX[2], y);
+        doc.text(m.homeForm.toString(), colX[3], y);
+        doc.text('vs', colX[4], y);
+        doc.text(m.awayForm.toString(), colX[5], y);
+        doc.text(m.awayTeam, colX[6], y);
+        doc.text(formDiff.toFixed(2), colX[7], y);
+        doc.text(m.odds[0].toString(), colX[8], y);
+        y += 21;
+        if (y > 530) {
+          doc.addPage();
+          y = 60;
+        }
+      });
+      doc.setFontSize(12);
+      doc.setTextColor(67,160,71);
+      doc.text('Accumulated Odds: ' + accumulatedOddsEl.textContent, 40, y+30);
+      doc.setFontSize(10);
+      doc.setTextColor(120,120,120);
+      doc.text('Generated by Peter', 40, y+50);
+      doc.text('This slip is generated automatically. For reference use only.', 40, y+65);
+
+      let pdfName = `multibet_${now.toISOString().slice(0,10)}_${now.getHours()}${now.getMinutes()}.pdf`;
+      if (cb) {
+        doc.save(pdfName, {returnPromise: true}).then(() => {
+          doc.output('blob', {callback: function(blob) {
+            lastPdfBlob = blob;
+            lastPdfName = pdfName;
+            cb(blob, pdfName);
+          }});
+        });
+      } else {
+        doc.save(pdfName);
+        doc.output('blob', {callback: function(blob) {
+          lastPdfBlob = blob;
+          lastPdfName = pdfName;
+        }});
+      }
+    }
+
+    function generateCSV(matches) {
+      let csv = [
+        ['Date','Time','Home Team','Home Form','vs','Away Form','Away Team','Form Diff','Odds']
+      ];
+      matches.forEach(m => {
+        const formDiff = Math.abs(m.homeForm - m.awayForm);
+        csv.push([
+          m.date,
+          m.time,
+          m.homeTeam,
+          m.homeForm,
+          'vs',
+          m.awayForm,
+          m.awayTeam,
+          formDiff.toFixed(2),
+          m.odds[0]
+        ]);
+      });
+      const now = new Date();
+      let csvContent = csv.map(row => row.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `multibet_${now.toISOString().slice(0,10)}_${now.getHours()}${now.getMinutes()}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function sendPdfToTelegram(pdfBlob, filename) {
+      const formData = new FormData();
+      formData.append('chat_id', '-1002712270878'); // Your channel ID
+      formData.append('document', pdfBlob, filename);
+      formData.append('caption', 'Football Multibet Slip PDF - generated by Peter');
+      fetch('https://api.telegram.org/bot7825435580:AAGc45ZosIvFSQaB7q2Jsy9e9wsEFGQUBck/sendDocument', {
+        method: 'POST',
+        body: formData
+      }).then(response => response.json())
+        .then(data => {
+          if (data.ok) {
+            alert('PDF sent to Telegram channel!');
+          } else {
+            alert('Failed to send to Telegram: ' + JSON.stringify(data));
+          }
+        }).catch(err => {
+          alert('Telegram send error: ' + err);
+        });
+    }
+
+    matches = [];
+    filteredMatches = [];
+    renderMatchTable();
+  </script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 Betting Tools Hub</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary: #1e88e5;
+      --primary-dark: #1565c0;
+      --secondary: #f5f8fa;
+      --accent: #ff6b6b;
+      --text: #333;
+      --text-light: #666;
+      --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      --transition: all 0.3s ease;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+    
+    header {
+      background: linear-gradient(120deg, var(--primary), #0d47a1);
+      color: white;
+      padding: 0.8rem 1rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+    
+    .mobile-menu-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: none;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    
+    .hero {
+      text-align: center;
+      padding: 1.5rem 0;
+      margin-bottom: 1rem;
+    }
+    
+    .hero h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary-dark);
+    }
+    
+    .hero p {
+      color: var(--text-light);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin-top: 1rem;
+    }
+    
+    .tool-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.2rem;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .tool-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    
+    .tool-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 1rem;
+      background: rgba(30, 136, 229, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: var(--primary);
+    }
+    
+    .tool-card h3 {
+      margin: 0.5rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      flex-grow: 1;
+    }
+    
+    .tool-card a {
+      display: inline-block;
+      text-decoration: none;
+      background: var(--primary);
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: var(--transition);
+      width: 100%;
+      margin-top: 0.8rem;
+    }
+    
+    .tool-card a:hover {
+      background: var(--primary-dark);
+      transform: scale(1.02);
+    }
+    
+    footer {
+      background: white;
+      text-align: center;
+      padding: 1.2rem;
+      font-size: 0.9rem;
+      color: var(--text-light);
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+    
+    footer p {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    @media (max-width: 768px) {
+      .mobile-menu-btn {
+        display: block;
+      }
+      
+      .logo span {
+        display: none;
+      }
+      
+      .tools-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+      }
+      
+      .tool-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+      }
+      
+      .tool-card {
+        padding: 1rem;
+      }
+      
+      .tool-card h3 {
+        font-size: 0.95rem;
+      }
+      
+      .tool-card a {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+      }
+      
+      .hero h1 {
+        font-size: 1.5rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .tools-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .tool-card h3 {
+        font-size: 0.9rem;
+      }
+      
+      .hero h1 {
+        font-size: 1.3rem;
+      }
+      
+      .hero p {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="logo">
+        <i class="fas fa-chart-line"></i>
+        <span>Betting Tools Hub</span>
+      </div>
+      <button class="mobile-menu-btn">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </header>
+  
+  <div class="container">
+    <div class="hero">
+      <h1>Professional Betting Tools</h1>
+      <p>All your essential betting tools in one place - optimized for mobile and desktop</p>
+    </div>
+    
+    <div class="tools-grid">
+      <div class="tool-card">
+        <div class="tool-icon">
+          <i class="fas fa-filter"></i>
+        </div>
+        <h3>3-Way Forebet Filter</h3>
+        <a href="3way Forebet.html">Open Tool</a>
+      </div>
+      
+      <div class="tool-card">
+        <div class="tool-icon">
+          <i class="fas fa-calculator"></i>
+        </div>
+        <h3>Counter Bet Calculator</h3>
+        <a href="counterbet.html">Open Tool</a>
+      </div>
+      
+      <div class="tool-card">
+        <div class="tool-icon">
+          <i class="fas fa-futbol"></i>
+        </div>
+        <h3>FootyStats Football Filter</h3>
+        <a href="footystats football filter.html">Open Tool</a>
+      </div>
+      
+      <div class="tool-card">
+        <div class="tool-icon">
+          <i class="fas fa-baseball-ball"></i>
+        </div>
+        <h3>FootyStats Tennis Filter</h3>
+        <a href="footystatstenis.html">Open Tool</a>
+      </div>
+      
+      <div class="tool-card">
+        <div class="tool-icon">
+          <i class="fas fa-chart-bar"></i>
+        </div>
+        <h3>Forebet Min-Max Tool</h3>
+        <a href="forebetfootball.html">Open Tool</a>
+      </div>
+      
+      <div class="tool-card">
+        <div class="tool-icon">
+          <i class="fas fa-cube"></i>
+        </div>
+        <h3>Multibet Calculator</h3>
+        <a href="multibet-calculator.html">Open Tool</a>
+      </div>
+      
+      <div class="tool-card">
+        <div class="tool-icon">
+          <i class="fas fa-cubes"></i>
+        </div>
+        <h3>Multibet Generator</h3>
+        <a href="multibetgenerator.html">Open Tool</a>
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    <p>Made with <i class="fas fa-heart" style="color: var(--accent);"></i> by Peter | Mobile Friendly | v1.2</p>
+  </footer>
+
+  <script>
+    // Simple script for mobile menu if needed in the future
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuBtn = document.querySelector('.mobile-menu-btn');
+      
+      menuBtn.addEventListener('click', function() {
+        alert('Mobile menu functionality can be added here');
+      });
+    });
+  </script>
+</body>
+</html>

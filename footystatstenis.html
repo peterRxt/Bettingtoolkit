@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tennis Match Analyzer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --table-header: #3498db;
+            --surface-grass: #27ae60;
+            --surface-clay: #d35400;
+            --surface-hard: #2980b9;
+            --tab-active: #3498db;
+            --tab-inactive: #95a5a6;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #1a2a3a, #2c3e50);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 900px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light);
+        }
+        .section-title i {
+            font-size: 1.8rem;
+        }
+        .file-upload {
+            border: 2px dashed var(--primary);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: rgba(52, 152, 219, 0.05);
+        }
+        .file-upload:hover {
+            background: rgba(52, 152, 219, 0.1);
+            transform: translateY(-3px);
+        }
+        .file-upload input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .upload-icon {
+            font-size: 3.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        .file-upload p {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--secondary);
+        }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        .btn:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn-export {
+            background: var(--success);
+        }
+        .btn-export:hover {
+            background: #27ae60;
+        }
+        .btn-reset {
+            background: var(--danger);
+        }
+        .btn-reset:hover {
+            background: #c0392b;
+        }
+        .btn-delete {
+            padding: 5px 12px;
+            font-size: 0.95em;
+            border-radius: 16px;
+            margin: 0;
+            margin-top: 0px;
+        }
+        .btn-search {
+            background: var(--warning);
+            color: white;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 16px;
+            font-size: 0.95em;
+            cursor: pointer;
+            margin-top: 2px;
+            margin-bottom: 2px;
+            display: inline-block;
+        }
+        .btn-search:hover {
+            background: #e67e22;
+        }
+        .filter-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        @media (max-width: 600px) {
+            .filter-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+        .filter-group {
+            margin-bottom: 15px;
+        }
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        .filter-group input, 
+        .filter-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #333;
+            font-size: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .filter-group input:focus, 
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .filter-btn {
+            flex: 1;
+        }
+        .results-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            grid-column: 1 / -1;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        .stat-label {
+            font-size: 1rem;
+            color: var(--secondary);
+        }
+        .tabs {
+            display: flex;
+            background: #f1f1f1;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            background: var(--tab-inactive);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover {
+            background: #7f8c8d;
+        }
+        .tab-btn.active {
+            background: var(--tab-active);
+        }
+        .matches-table-container {
+            overflow-x: auto;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .matches-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1080px;
+        }
+        .matches-table th {
+            background: var(--table-header);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .matches-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .matches-table tr:hover {
+            background: #e9f7fe;
+        }
+        .matches-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        .form-cell {
+            font-weight: 700;
+            text-align: center;
+        }
+        .form-high {
+            color: var(--success);
+        }
+        .form-low {
+            color: var(--danger);
+        }
+        .diff-cell {
+            font-weight: 700;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .surface {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+        }
+        .surface-grass {
+            background: var(--surface-grass);
+        }
+        .surface-clay {
+            background: var(--surface-clay);
+        }
+        .surface-hard {
+            background: var(--surface-hard);
+        }
+        .odds {
+            font-weight: 700;
+            text-align: center;
+        }
+        .export-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            margin-top: 20px;
+            gap: 15px;
+        }
+        .flag {
+            display: inline-block;
+            width: 24px;
+            height: 16px;
+            background-size: cover;
+            margin-right: 8px;
+            vertical-align: middle;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .flag-de { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3"><rect width="5" height="3" fill="black"/><rect width="5" height="2" fill="red" y="1"/><rect width="5" height="1" fill="gold" y="2"/></svg>'); }
+        .flag-gb { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0v30L60 0z" fill="#fff"/><path d="M0 0l60 30h-20L0 20z" fill="#C8102E"/><path d="M60 0v30L0 0z" fill="#fff"/><path d="M60 0l-60 30v-10l40-20z" fill="#C8102E"/></svg>'); }
+        .flag-pl { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><rect width="8" height="5" fill="white"/><rect width="8" height="2.5" fill="#dc143c" y="2.5"/></svg>'); }
+        .flag-fr { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 6"><path d="M0 0h3v6H0z" fill="#002395"/><path d="M3 0h3v6H3z" fill="#fff"/><path d="M6 0h3v6H6z" fill="#ed2939"/></svg>'); }
+        .flag-us { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 30"><path fill="#b22234" d="M0 0h57v30H0z"/><path fill="#fff" d="M0 0h57v2.4H0zm0 4.8h57V7H0zm0 4.8h57v2.4H0zm0 4.8h57v2.4H0zm0 4.8h57v2.4H0zm0 4.8h57V30H0z"/><path fill="#3c3b6e" d="M0 0h24v16.8H0z"/><path fill="#fff" d="M1.2 1.2h1.2v1.2H1.2zm2.4 0h1.2v1.2H3.6zm2.4 0h1.2v1.2H6zm2.4 0h1.2v1.2H8.4zm2.4 0h1.2v1.2h-1.2zm2.4 0h1.2v1.2h-1.2zm2.4 0h1.2v1.2H18zm-14.4 2.4h1.2v1.2H3.6zm2.4 0h1.2v1.2H6zm2.4 0h1.2v1.2H8.4zm2.4 0h1.2v1.2h-1.2zm2.4 0h1.2v1.2h-1.2zm2.4 0h1.2v1.2H18zm-16.8 2.4h1.2v1.2H1.2zm2.4 0h1.2v1.2H3.6zm2.4 0h1.2v1.2H6zm2.4 0h1.2v1.2H8.4zm2.4 0h1.2v1.2h-1.2zm2.4 0h1.2v1.2h-1.2zm2.4 0h1.2v1.2H18zm-14.4 2.4h1.2v1.2H3.6zm2.4 0h1.2v1.2H6zm2.4 0h1.2v1.2H8.4zm2.4 0h1.2v1.2h-1.2zm2.4 0h1.2v1.2h-1.2zm2.4 0h1.2v1.2H18zm-16.8 2.4h1.2v1.2H1.2zm2.4 0h1.2v1.2H3.6zm2.4 0h1.2v1.2H6zm2.4 0h1.2v1.2H8.4zm2.4 0h1.2v1.2h-1.2zm2.4 0h1.2v1.2h-1.2zm2.4 0h1.2v1.2H18z"/></svg>'); }
+        .flag-bo { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 12"><rect width="18" height="4" fill="#ce1126" y="0"/><rect width="18" height="4" fill="#fcd116" y="4"/><rect width="18" height="4" fill="#078930" y="8"/></svg>'); }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #bdc3c7;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .section-title {
+                font-size: 1.3rem;
+            }
+            .stat-card {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-tennis-ball"></i> Tennis Match Analyzer</h1>
+            <p class="subtitle">Upload ATP/WTA match data to find matches with significant form differences and filter by odds. Export results to PDF.</p>
+        </header>
+        <div class="content">
+            <div class="card">
+                <h2 class="section-title">
+                    <i class="fas fa-file-upload"></i> Upload Match Data
+                </h2>
+                <div class="file-upload" id="dropZone">
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <p>Drag & drop your match data file here</p>
+                    <p>or</p>
+                    <button class="btn">Browse Files</button>
+                    <input type="file" id="fileInput" accept=".html,.htm">
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="section-title">
+                    <i class="fas fa-filter"></i> Filter Options
+                </h2>
+                <div class="filter-controls">
+                    <div>
+                        <div class="filter-group">
+                            <label for="minDifference">Minimum Form Difference</label>
+                            <input type="number" id="minDifference" min="10" max="50" value="20">
+                        </div>
+                        <div class="filter-group">
+                            <label for="minOdds">Minimum Odds (Underdog)</label>
+                            <input type="number" id="minOdds" min="1" max="10" step="0.1" value="2.0">
+                        </div>
+                        <div class="filter-group">
+                            <label for="maxOdds">Maximum Odds (Favorite)</label>
+                            <input type="number" id="maxOdds" min="1" max="10" step="0.1" value="1.5">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="filter-group">
+                            <label for="tournament">Tournament</label>
+                            <select id="tournament">
+                                <option value="all">All Tournaments</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="surface">Surface</label>
+                            <select id="surface">
+                                <option value="all">All Surfaces</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="gender">Gender</label>
+                            <select id="gender">
+                                <option value="all">All</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-buttons">
+                    <button class="btn filter-btn" id="analyzeBtn">Analyze Matches</button>
+                    <button class="btn btn-reset" id="resetBtn">Reset Filters</button>
+                </div>
+            </div>
+            <div class="results-section card">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-bar"></i> Analysis Results
+                </h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalMatches">0</div>
+                        <div class="stat-label">Total Matches</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="filteredMatches">0</div>
+                        <div class="stat-label">Filtered Matches</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgDifference">0</div>
+                        <div class="stat-label">Avg. Form Diff</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="maxDifference">0</div>
+                        <div class="stat-label">Max Form Diff</div>
+                    </div>
+                </div>
+                <div class="tabs">
+                    <button class="tab-btn active" data-view="all">All Matches</button>
+                    <button class="tab-btn" data-view="home">Favorites at Home</button>
+                    <button class="tab-btn" data-view="away">Favorites Away</button>
+                </div>
+                <div class="matches-table-container">
+                    <table class="matches-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Tournament</th>
+                                <th>Player 1</th>
+                                <th>Form</th>
+                                <th>Odds</th>
+                                <th>Player 2</th>
+                                <th>Form</th>
+                                <th>Odds</th>
+                                <th>Diff</th>
+                                <th>Surface</th>
+                                <th>Time</th>
+                                <th>Search</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matchesBody">
+                            <tr>
+                                <td colspan="13" style="text-align: center; padding: 30px; color: #7f8c8d;">
+                                    Upload match data to begin analysis
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div id="oddsProducts" style="font-weight:bold; margin-top:6px; color:#2980b9;"></div>
+                </div>
+                <div class="export-section">
+                    <button class="btn btn-export" id="exportBtn">
+                        <i class="fas fa-file-pdf"></i> Export to PDF
+                    </button>
+                    <button class="btn btn-export" id="copySlipBtn">
+                        <i class="fas fa-copy"></i> Copy Slip for Linebet/1xBet
+                    </button>
+                    <a href="https://1xbet.com" target="_blank" class="btn btn-export"><i class="fas fa-external-link-alt"></i> Open 1xBet</a>
+                    <a href="https://linebet.com" target="_blank" class="btn btn-export"><i class="fas fa-external-link-alt"></i> Open Linebet</a>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <p>Tennis Match Analyzer &copy; 2023 | Filter matches by form difference and odds | Export results to PDF</p>
+        </footer>
+    </div>
+    <script>
+        // DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const minDifferenceInput = document.getElementById('minDifference');
+        const minOddsInput = document.getElementById('minOdds');
+        const maxOddsInput = document.getElementById('maxOdds');
+        const tournamentFilter = document.getElementById('tournament');
+        const surfaceFilter = document.getElementById('surface');
+        const genderFilter = document.getElementById('gender');
+        const matchesBody = document.getElementById('matchesBody');
+        const totalMatchesEl = document.getElementById('totalMatches');
+        const filteredMatchesEl = document.getElementById('filteredMatches');
+        const avgDifferenceEl = document.getElementById('avgDifference');
+        const maxDifferenceEl = document.getElementById('maxDifference');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const oddsProductsDiv = document.getElementById('oddsProducts');
+        // Current matches data
+        let currentMatches = [];
+        let filteredMatches = [];
+        let uniqueTournaments = new Set();
+        let uniqueSurfaces = new Set();
+        let globalMatchId = 0; // for unique id
+        let currentView = 'all'; // 'all', 'home', or 'away'
+        // Event listeners
+        fileInput.addEventListener('change', handleFileUpload);
+        analyzeBtn.addEventListener('click', analyzeMatches);
+        resetBtn.addEventListener('click', resetFilters);
+        exportBtn.addEventListener('click', exportToPDF);
+        // Tab switching
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active tab
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                // Update current view
+                currentView = button.dataset.view;
+                // Re-render matches
+                renderMatches();
+            });
+        });
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        function highlight() {
+            dropZone.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
+        }
+        function unhighlight() {
+            dropZone.style.backgroundColor = '';
+        }
+        dropZone.addEventListener('drop', handleDrop, false);
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            handleFileUpload();
+        }
+        function handleFileUpload() {
+            const file = fileInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                parseMatchData(content);
+            };
+            reader.readAsText(file);
+        }
+        function parseMatchData(htmlContent) {
+            currentMatches = [];
+            uniqueTournaments.clear();
+            uniqueSurfaces.clear();
+            globalMatchId = 0;
+            // Create a DOM parser
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+            // Find all tournament sections
+            const tournamentSections = doc.querySelectorAll('.match-list');
+            tournamentSections.forEach(section => {
+                // Skip doubles sections
+                if (section.classList.contains('format-doubles') || 
+                    section.classList.contains('dnone-important')) {
+                    return;
+                }
+                // Extract tournament header info
+                const header = section.querySelector('.match-list-header');
+                if (!header) return;
+                const tournamentName = header.querySelector('h2')?.textContent?.trim() || 'Unknown Tournament';
+                const countryElement = header.querySelector('.flag');
+                const country = countryElement ? countryElement.className.split(' ')[1].replace('flag-', '') : 'Unknown';
+                // Extract surface and gender
+                let surface = 'Unknown';
+                let gender = 'all';
+                const highlights = header.querySelectorAll('.format-highlight');
+                highlights.forEach(highlight => {
+                    const text = highlight.textContent.trim();
+                    if (text === 'Grass' || text === 'Clay' || text === 'Hard') {
+                        surface = text;
+                    } else if (text === 'Men') {
+                        gender = 'men';
+                    } else if (text === 'Women') {
+                        gender = 'women';
+                    }
+                });
+                // Add to unique sets for filters
+                uniqueTournaments.add(tournamentName);
+                uniqueSurfaces.add(surface);
+                // Process matches
+                const matchRows = section.querySelectorAll('.match-row');
+                matchRows.forEach(row => {
+                    const playerRows = row.querySelectorAll('.row.cf.bbox');
+                    if (playerRows.length < 2) return;
+                    const player1Row = playerRows[0];
+                    const player2Row = playerRows[1];
+                    // Extract player 1 data
+                    const player1Name = player1Row.querySelector('.box2')?.textContent?.trim() || 'Unknown Player';
+                    const player1Form = parseInt(player1Row.querySelector('.form-box')?.textContent?.trim() || '0');
+                    const player1Odds = parseFloat(player1Row.querySelector('.box3')?.textContent?.trim() || '0') || '-';
+                    // Extract player 2 data
+                    const player2Name = player2Row.querySelector('.box2')?.textContent?.trim() || 'Unknown Player';
+                    const player2Form = parseInt(player2Row.querySelector('.form-box')?.textContent?.trim() || '0');
+                    const player2Odds = parseFloat(player2Row.querySelector('.box3')?.textContent?.trim() || '0') || '-';
+                    // Skip matches with N/A in player names
+                    if (player1Name.includes('(N/A)') || player2Name.includes('(N/A)')) {
+                        return;
+                    }
+                    // Extract time
+                    const timeElement = player1Row.querySelector('.live-box');
+                    const time = timeElement?.textContent?.trim() || 'TBD';
+                    // Calculate form difference
+                    const formDiff = Math.abs(player1Form - player2Form);
+                    // Create match object
+                    const match = {
+                        id: globalMatchId++,
+                        tournament: tournamentName,
+                        country: country,
+                        player1: player1Name,
+                        form1: player1Form,
+                        odds1: player1Odds,
+                        player2: player2Name,
+                        form2: player2Form,
+                        odds2: player2Odds,
+                        time: time,
+                        surface: surface,
+                        gender: gender,
+                        diff: formDiff,
+                        premium: row.classList.contains('plo')
+                    };
+                    currentMatches.push(match);
+                });
+            });
+            // Update filter options
+            updateFilterOptions();
+            // Update stats
+            totalMatchesEl.textContent = currentMatches.length;
+            // Filter matches
+            filterMatches();
+        }
+        function updateFilterOptions() {
+            // Update tournament filter
+            tournamentFilter.innerHTML = '<option value="all">All Tournaments</option>';
+            uniqueTournaments.forEach(tournament => {
+                const option = document.createElement('option');
+                option.value = tournament;
+                option.textContent = tournament;
+                tournamentFilter.appendChild(option);
+            });
+            // Update surface filter
+            surfaceFilter.innerHTML = '<option value="all">All Surfaces</option>';
+            uniqueSurfaces.forEach(surface => {
+                const option = document.createElement('option');
+                option.value = surface;
+                option.textContent = surface;
+                surfaceFilter.appendChild(option);
+            });
+            // Update gender filter
+            genderFilter.innerHTML = `
+                <option value="all">All</option>
+                <option value="men">Men</option>
+                <option value="women">Women</option>
+            `;
+        }
+        function analyzeMatches() {
+            if (currentMatches.length === 0) {
+                alert('Please upload tennis match data first');
+                return;
+            }
+            filterMatches();
+        }
+        function resetFilters() {
+            minDifferenceInput.value = 20;
+            minOddsInput.value = 2.0;
+            maxOddsInput.value = 1.5;
+            tournamentFilter.value = 'all';
+            surfaceFilter.value = 'all';
+            genderFilter.value = 'all';
+            if (currentMatches.length > 0) {
+                filterMatches();
+            }
+        }
+        function filterMatches() {
+            const minDifference = parseInt(minDifferenceInput.value) || 20;
+            const minOdds = parseFloat(minOddsInput.value) || 2.0;
+            const maxOdds = parseFloat(maxOddsInput.value) || 1.5;
+            const tournament = tournamentFilter.value;
+            const surface = surfaceFilter.value;
+            const gender = genderFilter.value;
+            filteredMatches = currentMatches.filter(match => {
+                // Exclude matches where either player has form 100
+                if (match.form1 === 100 || match.form2 === 100) return false;
+                // Apply filters
+                const diffFilter = match.diff >= minDifference;
+                const tournamentFilterPass = tournament === 'all' || match.tournament === tournament;
+                const surfaceFilterPass = surface === 'all' || match.surface === surface;
+                const genderFilterPass = gender === 'all' || match.gender === gender;
+                // Odds filter - either player has odds within the specified range
+                const oddsFilter = 
+                    (typeof match.odds1 === 'number' && 
+                     ((match.odds1 >= minOdds && match.odds1 <= 10) || 
+                      (match.odds1 <= maxOdds && match.odds1 >= 1))) ||
+                    (typeof match.odds2 === 'number' && 
+                     ((match.odds2 >= minOdds && match.odds2 <= 10) || 
+                      (match.odds2 <= maxOdds && match.odds2 >= 1)));
+                return diffFilter && tournamentFilterPass && surfaceFilterPass && genderFilterPass && oddsFilter;
+            });
+            // Sort matches by time (earliest first)
+            filteredMatches.sort((a, b) => {
+                // Handle TBD matches
+                if (a.time === 'TBD' && b.time !== 'TBD') return 1;
+                if (a.time !== 'TBD' && b.time === 'TBD') return -1;
+                if (a.time === 'TBD' && b.time === 'TBD') return 0;
+                // Convert time to minutes for comparison
+                const aTime = a.time.split(':').map(Number);
+                const bTime = b.time.split(':').map(Number);
+                const aTotal = aTime[0] * 60 + aTime[1];
+                const bTotal = bTime[0] * 60 + bTime[1];
+                return aTotal - bTotal;
+            });
+            updateStats();
+            renderMatches();
+        }
+        function updateStats() {
+            filteredMatchesEl.textContent = filteredMatches.length;
+            if (filteredMatches.length > 0) {
+                const totalDiff = filteredMatches.reduce((sum, match) => sum + match.diff, 0);
+                const maxDiff = Math.max(...filteredMatches.map(match => match.diff));
+                avgDifferenceEl.textContent = (totalDiff / filteredMatches.length).toFixed(1);
+                maxDifferenceEl.textContent = maxDiff;
+            } else {
+                avgDifferenceEl.textContent = '0';
+                maxDifferenceEl.textContent = '0';
+            }
+        }
+        function urlEncodeForSearch(str) {
+            // encodeURIComponent but also replace spaces with + for search
+            return encodeURIComponent(str).replace(/%20/g, '+');
+        }
+        function renderMatches() {
+            if (filteredMatches.length === 0) {
+                matchesBody.innerHTML = `
+                    <tr>
+                        <td colspan="13" style="text-align: center; padding: 30px; color: #e74c3c;">
+                            No matches found with the current filters. Try adjusting your criteria.
+                        </td>
+                    </tr>
+                `;
+                oddsProductsDiv.textContent = '';
+                return;
+            }
+            let html = '';
+            let viewMatches = filteredMatches;
+            // Apply current view filter
+            if (currentView === 'home') {
+                viewMatches = filteredMatches.filter(match => 
+                    typeof match.odds1 === 'number' && match.odds1 < match.odds2
+                );
+            } else if (currentView === 'away') {
+                viewMatches = filteredMatches.filter(match => 
+                    typeof match.odds2 === 'number' && match.odds2 < match.odds1
+                );
+            }
+            if (viewMatches.length === 0) {
+                matchesBody.innerHTML = `
+                    <tr>
+                        <td colspan="13" style="text-align: center; padding: 30px; color: #e74c3c;">
+                            No ${currentView === 'home' ? 'home favorites' : 'away favorites'} found with current filters.
+                        </td>
+                    </tr>
+                `;
+                oddsProductsDiv.textContent = '';
+                return;
+            }
+            // Add matches to table with numbering, search button & delete button
+            viewMatches.forEach((match, index) => {
+                const formClass1 = match.form1 > match.form2 ? 'form-high' : 'form-low';
+                const formClass2 = match.form2 > match.form1 ? 'form-high' : 'form-low';
+                const surfaceClass = match.surface === 'Grass' ? 'surface-grass' : 
+                                  match.surface === 'Clay' ? 'surface-clay' : 'surface-hard';
+                const flagClass = `flag flag-${match.country.toLowerCase()}`;
+                // Highlight favorites
+                const isHomeFavorite = typeof match.odds1 === 'number' && match.odds1 < match.odds2;
+                const isAwayFavorite = typeof match.odds2 === 'number' && match.odds2 < match.odds1;
+                // Construct search link
+                const searchQuery = urlEncodeForSearch(`${match.player1} vs ${match.player2}`);
+                const linebetSearchUrl = `https://linebet.com/en/search/?q=${searchQuery}`;
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="${flagClass}"></div>
+                            ${match.tournament}
+                        </td>
+                        <td>${match.player1} ${isHomeFavorite ? '<i class="fas fa-star" style="color:#f39c12;"></i>' : ''}</td>
+                        <td class="form-cell ${formClass1}">${match.form1}</td>
+                        <td class="odds">${match.odds1}</td>
+                        <td>${match.player2} ${isAwayFavorite ? '<i class="fas fa-star" style="color:#f39c12;"></i>' : ''}</td>
+                        <td class="form-cell ${formClass2}">${match.form2}</td>
+                        <td class="odds">${match.odds2}</td>
+                        <td class="diff-cell">${match.diff}</td>
+                        <td><span class="surface ${surfaceClass}">${match.surface}</span></td>
+                        <td>${match.time}</td>
+                        <td>
+                            <a href="${linebetSearchUrl}" target="_blank" class="btn-search" title="Search this match on Linebet">
+                                <i class="fas fa-search"></i> Search
+                            </a>
+                        </td>
+                        <td>
+                            <button class="btn btn-reset btn-delete" data-id="${match.id}" title="Delete this match"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            matchesBody.innerHTML = html;
+            // Attach delete event listeners
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const matchId = parseInt(this.getAttribute('data-id'));
+                    // Remove from currentMatches
+                    const idx = currentMatches.findIndex(m => m.id === matchId);
+                    if (idx > -1) {
+                        currentMatches.splice(idx, 1);
+                        filterMatches();
+                    }
+                });
+            });
+            // Calculate and display odds products
+            let homeProduct = 1, awayProduct = 1;
+            let homeCount = 0, awayCount = 0;
+            viewMatches.forEach(match => {
+                if (typeof match.odds1 === 'number' && match.odds1 < match.odds2) {
+                    homeProduct *= match.odds1;
+                    homeCount++;
+                }
+                if (typeof match.odds2 === 'number' && match.odds2 < match.odds1) {
+                    awayProduct *= match.odds2;
+                    awayCount++;
+                }
+            });
+            let oddsProdHtml = '';
+            if (homeCount > 0) oddsProdHtml += `Home Favorites Odds Product: <span style="color:#27ae60">${homeProduct.toFixed(2)}</span> `;
+            if (awayCount > 0) oddsProdHtml += `Away Favorites Odds Product: <span style="color:#d35400">${awayProduct.toFixed(2)}</span>`;
+            oddsProductsDiv.innerHTML = oddsProdHtml;
+        }
+        function exportToPDF() {
+            if (filteredMatches.length === 0) {
+                alert('No matches to export. Please apply filters first.');
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            // Create PDF document
+            const doc = new jsPDF('landscape');
+            // Add title
+            doc.setFontSize(18);
+            doc.text('Tennis Match Analysis Report', 140, 15, null, null, 'center');
+            // Add subtitle
+            doc.setFontSize(12);
+            doc.setTextColor(100);
+            const date = new Date().toLocaleDateString();
+            doc.text(`Generated on ${date}`, 140, 22, null, null, 'center');
+            // Add stats
+            doc.setFontSize(11);
+            doc.setTextColor(0);
+            doc.text(`Total Matches: ${currentMatches.length}`, 20, 35);
+            doc.text(`Filtered Matches: ${filteredMatches.length}`, 20, 40);
+            doc.text(`Avg. Form Difference: ${avgDifferenceEl.textContent}`, 20, 45);
+            doc.text(`Max Form Difference: ${maxDifferenceEl.textContent}`, 20, 50);
+            // Add filters
+            doc.text(`Min Form Difference: ${minDifferenceInput.value}`, 60, 35);
+            doc.text(`Min Odds (Underdog): ${minOddsInput.value}`, 60, 40);
+            doc.text(`Max Odds (Favorite): ${maxOddsInput.value}`, 60, 45);
+            doc.text(`Tournament: ${tournamentFilter.value === 'all' ? 'All' : tournamentFilter.value}`, 60, 50);
+            doc.text(`Surface: ${surfaceFilter.value === 'all' ? 'All' : surfaceFilter.value}`, 100, 35);
+            doc.text(`Gender: ${genderFilter.value === 'all' ? 'All' : genderFilter.value}`, 100, 40);
+            // Create table headers
+            const headers = [
+                '#', 
+                'Tournament', 
+                'Player 1', 
+                'Form', 
+                'Odds', 
+                'Player 2', 
+                'Form', 
+                'Odds', 
+                'Diff', 
+                'Surface', 
+                'Time'
+            ];
+            // Prepare data for home favorites
+            const homeFavorites = filteredMatches.filter(match => 
+                typeof match.odds1 === 'number' && match.odds1 < match.odds2
+            );
+            // Prepare data for away favorites
+            const awayFavorites = filteredMatches.filter(match => 
+                typeof match.odds2 === 'number' && match.odds2 < match.odds1
+            );
+            // Calculate odds products
+            const homeProduct = homeFavorites.reduce((prod, match) => prod * (typeof match.odds1 === 'number' ? match.odds1 : 1), 1);
+            const awayProduct = awayFavorites.reduce((prod, match) => prod * (typeof match.odds2 === 'number' ? match.odds2 : 1), 1);
+            let lastY = 65;
+            // Section for home favorites
+            if (homeFavorites.length > 0) {
+                doc.setFontSize(14);
+                doc.text('Favorites at Home', 20, lastY);
+                doc.setFontSize(11);
+                const homeRows = homeFavorites.map((match, index) => [
+                    index + 1,
+                    match.tournament,
+                    match.player1,
+                    match.form1,
+                    match.odds1,
+                    match.player2,
+                    match.form2,
+                    match.odds2,
+                    match.diff,
+                    match.surface,
+                    match.time
+                ]);
+                doc.autoTable({
+                    head: [headers],
+                    body: homeRows,
+                    startY: lastY + 5,
+                    theme: 'grid',
+                    styles: { fontSize: 9 },
+                    headStyles: { fillColor: [52, 152, 219] },
+                    columnStyles: {
+                        0: { cellWidth: 8 },
+                        1: { cellWidth: 25 },
+                        2: { cellWidth: 22 },
+                        3: { cellWidth: 10 },
+                        4: { cellWidth: 10 },
+                        5: { cellWidth: 22 },
+                        6: { cellWidth: 10 },
+                        7: { cellWidth: 10 },
+                        8: { cellWidth: 10 },
+                        9: { cellWidth: 12 },
+                        10: { cellWidth: 12 }
+                    }
+                });
+                // Add odds product after table
+                lastY = doc.lastAutoTable.finalY + 6;
+                doc.setFontSize(12);
+                doc.setTextColor(39, 174, 96); // greenish for home
+                doc.text(`Home Favorites Odds Product: ${homeProduct.toFixed(2)}`, 20, lastY);
+                lastY += 7;
+                doc.setTextColor(0);
+            }
+            // Section for away favorites
+            if (awayFavorites.length > 0) {
+                // Position for the next table
+                if (homeFavorites.length === 0) lastY = 65;
+                doc.setFontSize(14);
+                doc.text('Favorites Away', 20, lastY);
+                doc.setFontSize(11);
+                const awayRows = awayFavorites.map((match, index) => [
+                    index + 1,
+                    match.tournament,
+                    match.player1,
+                    match.form1,
+                    match.odds1,
+                    match.player2,
+                    match.form2,
+                    match.odds2,
+                    match.diff,
+                    match.surface,
+                    match.time
+                ]);
+                doc.autoTable({
+                    head: [headers],
+                    body: awayRows,
+                    startY: lastY + 5,
+                    theme: 'grid',
+                    styles: { fontSize: 9 },
+                    headStyles: { fillColor: [52, 152, 219] },
+                    columnStyles: {
+                        0: { cellWidth: 8 },
+                        1: { cellWidth: 25 },
+                        2: { cellWidth: 22 },
+                        3: { cellWidth: 10 },
+                        4: { cellWidth: 10 },
+                        5: { cellWidth: 22 },
+                        6: { cellWidth: 10 },
+                        7: { cellWidth: 10 },
+                        8: { cellWidth: 10 },
+                        9: { cellWidth: 12 },
+                        10: { cellWidth: 12 }
+                    }
+                });
+                // Add odds product after table
+                lastY = doc.lastAutoTable.finalY + 6;
+                doc.setFontSize(12);
+                doc.setTextColor(211, 84, 0); // orange for away
+                doc.text(`Away Favorites Odds Product: ${awayProduct.toFixed(2)}`, 20, lastY);
+                lastY += 7;
+                doc.setTextColor(0);
+            }
+            // If no favorites found, show a message
+            if (homeFavorites.length === 0 && awayFavorites.length === 0) {
+                doc.setFontSize(14);
+                doc.text('No favorites found with current filters', 20, lastY);
+                lastY += 7;
+            }
+            // Add footer notes
+            const footerY = lastY + 12;
+            doc.setFontSize(10);
+            doc.setTextColor(50);
+            doc.text('Generated by Peter', 15, footerY);
+            doc.text('Buy Goods till no: 3673858.  Peter,', 15, footerY + 6);
+            doc.text('Ticket once sold not refundable.', 15, footerY + 12);
+            doc.text('Matches win probability 97%', 15, footerY + 18);
+            doc.text('Bet responsibly.', 15, footerY + 24);
+            // Add QR code
+            const qrImage = new window.Image();
+            qrImage.crossOrigin = "anonymous";
+            qrImage.src = "https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://betresponsibly.org";
+            qrImage.onload = () => {
+                doc.addImage(qrImage, 'PNG', 240, footerY - 5, 30, 30);
+                doc.save(`tennis-analysis-${new Date().toISOString().slice(0, 10)}.pdf`);
+            };
+            qrImage.onerror = () => {
+                doc.save(`tennis-analysis-${new Date().toISOString().slice(0, 10)}.pdf`);
+            }
+        }
+
+        // Copy slip button functionality
+        document.getElementById('copySlipBtn').addEventListener('click', function() {
+            if (!filteredMatches || filteredMatches.length === 0) {
+                alert('No matches to copy.');
+                return;
+            }
+            const slip = filteredMatches.map((match, i) =>
+                `${i + 1}. ${match.tournament}: ${match.player1} vs ${match.player2} | Odds: ${match.odds1} / ${match.odds2} | Time: ${match.time}`
+            ).join('\n');
+            navigator.clipboard.writeText(slip)
+                .then(() => alert('Slip copied! Open Linebet/1xBet and select these matches manually.'))
+                .catch(() => alert('Could not copy slip. Please try again.'));
+        });
+    </script>
+</body>
+</html>

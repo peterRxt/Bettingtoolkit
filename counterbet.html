@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎯 Counter Bet Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input, button, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input, select {
+      background: #2c2c2c;
+      color: #fff;
+    }
+    button {
+      background: #00b894;
+      color: white;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 20px;
+      background: #2c2c2c;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .result p {
+      margin: 6px 0;
+      font-size: 16px;
+    }
+    .loss { color: #e74c3c; }
+    .profit { color: #2ecc71; }
+    .saved { color: #00cec9; font-style: italic; }
+    .warning { color: orange; font-style: italic; }
+    @media (max-width: 600px) {
+      .container { padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎯 Counter Bet Calculator</h1>
+
+  <label>Mode:</label>
+  <select id="mode">
+    <option value="minimize">🔻 Minimize Loss</option>
+    <option value="profit">📈 Ensure Profit (Arbitrage)</option>
+  </select>
+
+  <label>Original Odds</label>
+  <input type="number" id="preOdds" step="0.01" placeholder="e.g. 2.0">
+
+  <label>Original Stake / Budget</label>
+  <input type="number" id="preStake" step="1" placeholder="e.g. 100">
+
+  <label>Live Odds (Counter Bet)</label>
+  <input type="number" id="liveOdds" step="0.01" placeholder="e.g. 1.8">
+
+  <button onclick="calculateCounter()">Calculate</button>
+
+  <div class="result" id="output" style="display: none;">
+    <div id="alert"></div>
+    <p><strong>💰 Stake on Original Bet:</strong> <span id="s1Out"></span></p>
+    <p><strong>💰 Stake on Counter Bet:</strong> <span id="s2Out"></span></p>
+    <p><strong>✅ If Original Wins:</strong> <span id="profitWin"></span></p>
+    <p><strong>✅ If Counter Wins:</strong> <span id="profitLose"></span></p>
+  </div>
+</div>
+
+<script>
+function calculateCounter() {
+  const O1 = parseFloat(document.getElementById("preOdds").value);
+  const S1_input = parseFloat(document.getElementById("preStake").value);
+  const O2 = parseFloat(document.getElementById("liveOdds").value);
+  const mode = document.getElementById("mode").value;
+
+  if (!O1 || !S1_input || !O2 || O1 <= 1 || O2 <= 1 || S1_input <= 0) {
+    alert("Please enter valid odds and stake values.");
+    return;
+  }
+
+  let S1 = S1_input;
+  let S2 = 0;
+  let netWin = 0;
+  let netLose = 0;
+  let alertText = "";
+
+  if (mode === "minimize") {
+    S2 = (O1 * S1) / O2;
+    S2 = Math.round(S2 / 10) * 10;
+    netWin = (O1 * S1) - S1 - S2;
+    netLose = (O2 * S2) - S2 - S1;
+    alertText = "🎯 Minimize Loss Mode";
+  } else {
+    const arbCheck = (1 / O1) + (1 / O2);
+    if (arbCheck >= 1) {
+      document.getElementById("alert").innerHTML = "<p class='warning'>❌ Arbitrage not possible with these odds.</p>";
+      document.getElementById("output").style.display = 'block';
+      document.getElementById("s1Out").innerText = "-";
+      document.getElementById("s2Out").innerText = "-";
+      document.getElementById("profitWin").innerText = "-";
+      document.getElementById("profitLose").innerText = "-";
+      return;
+    }
+    const total = S1_input;
+    S1 = (total * (1 / O1)) / ((1 / O1) + (1 / O2));
+    S2 = total - S1;
+    S1 = Math.round(S1 / 10) * 10;
+    S2 = Math.round(S2 / 10) * 10;
+    const totalUsed = S1 + S2;
+    netWin = (S1 * O1) - totalUsed;
+    netLose = (S2 * O2) - totalUsed;
+    alertText = "<p class='profit'>✅ Arbitrage Found! Guaranteed Profit Possible.</p>";
+  }
+
+  document.getElementById("s1Out").innerText = `KES ${S1.toFixed(2)}`;
+  document.getElementById("s2Out").innerText = `KES ${S2.toFixed(2)}`;
+  document.getElementById("profitWin").innerText = `KES ${netWin.toFixed(2)}`;
+  document.getElementById("profitLose").innerText = `KES ${netLose.toFixed(2)}`;
+
+  document.getElementById("profitWin").className = netWin >= 0 ? 'profit' : 'loss';
+  document.getElementById("profitLose").className = netLose >= 0 ? 'profit' : 'loss';
+  document.getElementById("alert").innerHTML = alertText;
+
+  document.getElementById("output").style.display = 'block';
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Bet Stake Calculator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-align: center;
+      margin: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+      justify-content: center;
+    }
+    input, button {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+    input {
+      width: 150px;
+    }
+    button {
+      background: #00b894;
+      color: white;
+      cursor: pointer;
+    }
+    .export-btn {
+      background: #0984e3;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #2c2c2c;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #444;
+      text-align: center;
+    }
+    th {
+      background: #333;
+    }
+    .btn-win, .btn-loss {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+    }
+    .btn-win { background: #27ae60; }
+    .btn-loss { background: #c0392b; }
+    .summary {
+      margin-top: 20px;
+      font-size: 16px;
+      text-align: center;
+    }
+    .summary span {
+      font-weight: bold;
+      color: #00cec9;
+    }
+    @media (max-width: 600px) {
+      input {
+        width: 100%;
+      }
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+      table {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎯 Smart Bet Stake Calculator</h1>
+  <div class="container">
+    <div class="controls">
+      <input type="number" id="budget" placeholder="Total Budget e.g. 1000" />
+      <input type="number" id="odds" step="0.01" placeholder="Enter Odds" />
+      <button onclick="addOdds()">Add Odds</button>
+      <button onclick="calculateStakes()">Calculate Stakes</button>
+      <button class="export-btn" onclick="exportPDF()">Export PDF</button>
+    </div>
+
+    <table id="betsTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Odds</th>
+          <th>Stake</th>
+          <th>Status</th>
+          <th>Payout</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="summary">
+      <p>Net Profit/Loss: <span id="net">0</span></p>
+      <p>Closing Balance: <span id="balance">0</span></p>
+    </div>
+  </div>
+
+<script>
+  let oddsList = [];
+  let stakes = [];
+  let results = [];
+  let totalBudget = 0;
+
+  function addOdds() {
+    const oddsInput = document.getElementById("odds").value;
+    const odds = parseFloat(oddsInput);
+    if (!odds || odds <= 1) {
+      alert("Enter valid odds > 1");
+      return;
+    }
+    oddsList.push(odds);
+    results.push(null);
+    updateTable();
+    document.getElementById("odds").value = "";
+  }
+
+  function calculateStakes() {
+    totalBudget = parseFloat(document.getElementById("budget").value);
+    if (!totalBudget || totalBudget <= 0) {
+      alert("Enter a valid total budget.");
+      return;
+    }
+
+    let inverseSum = oddsList.reduce((sum, o) => sum + (1 / o), 0);
+    let rawStakes = oddsList.map(o => ((1 / o) / inverseSum) * totalBudget);
+    stakes = rawStakes.map(stake => Math.round(stake / 10) * 10);
+
+    let diff = totalBudget - stakes.reduce((a, b) => a + b, 0);
+    if (Math.abs(diff) >= 10) {
+      stakes[0] += diff;
+    }
+
+    updateTable();
+    updateSummary();
+  }
+
+  function updateTable() {
+    const tbody = document.querySelector("#betsTable tbody");
+    tbody.innerHTML = "";
+
+    oddsList.forEach((odds, index) => {
+      const stake = stakes[index] !== undefined ? stakes[index].toFixed(2) : "-";
+      const status = results[index];
+      let payout = "-";
+      if (status === "win") payout = (stakes[index] * odds).toFixed(2);
+      else if (status === "loss") payout = "0.00";
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${odds}</td>
+          <td>${stake}</td>
+          <td>
+            <button class="btn-win" onclick="setResult(${index}, 'win')">Win</button>
+            <button class="btn-loss" onclick="setResult(${index}, 'loss')">Loss</button>
+          </td>
+          <td>${payout}</td>
+          <td><button onclick="deleteBet(${index})">🗑</button></td>
+        </tr>
+      `;
+    });
+  }
+
+  function setResult(index, status) {
+    results[index] = status;
+    updateTable();
+    updateSummary();
+  }
+
+  function deleteBet(index) {
+    oddsList.splice(index, 1);
+    results.splice(index, 1);
+    stakes.splice(index, 1);
+    updateTable();
+    updateSummary();
+  }
+
+  function updateSummary() {
+    let net = 0;
+
+    oddsList.forEach((odds, i) => {
+      const stake = stakes[i] || 0;
+      if (results[i] === "win") {
+        net += (stake * odds) - stake;
+      } else if (results[i] === "loss") {
+        net -= stake;
+      }
+    });
+
+    document.getElementById("net").textContent = net.toFixed(2);
+    document.getElementById("balance").textContent = (totalBudget + net).toFixed(2);
+  }
+
+  function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const now = new Date();
+    const timestamp = now.toLocaleString();
+
+    // Title and timestamp
+    doc.setFontSize(14);
+    doc.text("📝 Bet Report", 14, 15);
+    doc.setFontSize(10);
+    doc.text("Generated: " + timestamp, 14, 22);
+
+    // Table content
+    const rows = oddsList.map((odds, i) => {
+      const stake = stakes[i] || 0;
+      const result = results[i] ? results[i].toUpperCase() : "PENDING";
+      const payout = results[i] === "win" ? (stake * odds).toFixed(2) : "0.00";
+      return [i + 1, odds, stake.toFixed(2), result, payout];
+    });
+
+    let net = 0;
+    oddsList.forEach((odds, i) => {
+      const stake = stakes[i] || 0;
+      if (results[i] === "win") net += (stake * odds) - stake;
+      else if (results[i] === "loss") net -= stake;
+    });
+    const closing = totalBudget + net;
+
+    doc.autoTable({
+      startY: 30,
+      head: [["#", "Odds", "Stake", "Result", "Payout"]],
+      body: rows,
+      styles: {
+        fillColor: [245, 245, 245],
+        textColor: [0, 0, 0],
+        halign: 'center'
+      },
+      headStyles: {
+        fillColor: [40, 40, 40],
+        textColor: [255, 255, 255]
+      },
+      didParseCell(data) {
+        if (data.column.index === 3 && data.cell.text[0] === "LOSS") {
+          data.cell.styles.textColor = [255, 0, 0];
+        }
+      }
+    });
+
+    doc.setFontSize(12);
+    doc.text(`Net Profit/Loss: ${net.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 10);
+    doc.text(`Closing Balance: ${closing.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 20);
+
+    doc.save(`Bet_Report_${now.toISOString().split("T")[0]}.pdf`);
+  }
+</script>
+
+</body>
+</html>
