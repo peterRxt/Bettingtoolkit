@@ -4,8 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Smart Bet Stake Calculator</title>
+
+  <!-- Correct jsPDF CDN for GitHub Pages -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    window.jsPDF = window.jspdf.jsPDF; // Make jsPDF usable globally
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -224,18 +230,15 @@
   }
 
   function exportPDF() {
-    const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const now = new Date();
     const timestamp = now.toLocaleString();
 
-    // Title and timestamp
     doc.setFontSize(14);
     doc.text("📝 Bet Report", 14, 15);
     doc.setFontSize(10);
     doc.text("Generated: " + timestamp, 14, 22);
 
-    // Table content
     const rows = oddsList.map((odds, i) => {
       const stake = stakes[i] || 0;
       const result = results[i] ? results[i].toUpperCase() : "PENDING";
