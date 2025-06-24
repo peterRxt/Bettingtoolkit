@@ -1,0 +1,50 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #f7f7f7;
+}
+
+h1 {
+  color: #333;
+}
+
+#upload, #filters {
+  background: #fff;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px #eee;
+  margin-bottom: 20px;
+}
+
+#filters label {
+  margin-right: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 2px 6px #eee;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+th {
+  background: #f0f0f0;
+}
+
+button.delete-btn {
+  background: #f44336;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button.delete-btn:hover {
+  background: #b71c1c;
+}
