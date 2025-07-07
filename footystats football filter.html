@@ -2,476 +2,520 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>UPLOAD MHTML FROM FOOTYSTATS</title>
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <title>FootyStats Match Filter & Extractor</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body { font-family: 'Roboto', sans-serif; background: #f5f7fa; margin: 0; color: #222; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
-    h1 { text-align: center; margin-bottom: 2rem; }
-    .controls { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 1.5rem; background: #fff; padding: 1rem; border-radius: 12px; box-shadow: 0 2px 8px #1e88e508; }
-    .controls label { font-size: 1rem; font-weight: 500; margin-right: 0.4em; }
-    .controls input[type="number"] { width: 65px; padding: 0.3em 0.5em; font-size: 1rem; border-radius: 6px; border: 1px solid #e0e0e0; margin-right: 0.6em; }
-    .controls input[type="file"] { display: none; }
-    .custom-file-upload { border: 1px solid #1e88e5; border-radius: 6px; padding: 0.5em 1em; color: #1e88e5; cursor: pointer; background: #fafdff; transition: background .2s; }
-    .custom-file-upload:hover { background: #1e88e5; color: #fff; }
-    .controls button, .controls .custom-file-upload { font-size: 1rem; padding: 0.5em 1.5em; border-radius: 6px; border: none; background: #1e88e5; color: #fff; cursor: pointer; font-weight: 600; transition: background .2s; }
-    .controls button.secondary { background: #43a047; }
-    .controls button.danger { background: #e53935; }
-    .controls button:disabled { opacity: 0.7; cursor: not-allowed; }
-    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px #1e88e508; margin-bottom: 2rem; }
-    thead { background: #1e88e5; color: #fff; }
-    th, td { padding: 0.7em 0.6em; text-align: center; border-bottom: 1px solid #e0e0e0; }
-    th { font-weight: 600; letter-spacing: 0.02em; }
-    td input[type="number"] { width: 70px; padding: 0.25em 0.5em; font-size: 1em; border-radius: 5px; border: 1px solid #e0e0e0; text-align: right; }
-    .delete-btn { background: #e53935; color: #fff; border: none; border-radius: 6px; padding: 0.3em 0.9em; font-size: 1em; cursor: pointer; transition: background .2s; }
-    .delete-btn:hover { background: #b71c1c; }
-    .odds-missing input[type="number"] { border: 2px solid #43a047; background: #e8f5e9; }
-    .odds-missing input[type="number"]:focus { outline: 2px solid #43a047; }
-    .accumulated-odds { display: flex; align-items: center; gap: 0.7em; font-size: 1.15em; font-weight: 500; background: #fff; padding: 1em; border-radius: 10px; box-shadow: 0 2px 8px #43a0470f; margin-bottom: 2rem; justify-content: flex-end; }
-    .export-btn { display: flex; align-items: center; gap: .7em; font-size: 1em; padding: 0.5em 1.5em; background: #43a047; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 2px 8px #43a0470f; transition: background .2s; }
-    .export-btn:hover { background: #388e3c; }
-    .notes { margin: 2em 0 1em 0; color: #757575; font-size: 1em; text-align: right; }
-    @media (max-width: 900px) { .controls { flex-direction: column; align-items: stretch; } table, thead, tbody, th, td, tr { font-size: 0.96em; } }
-    @media (max-width: 600px) { .container { padding: 0.5rem 0.2rem; } .accumulated-odds, .notes { font-size: 0.98em; } th, td { padding: 0.5em 0.2em; } .export-btn, .controls button, .controls .custom-file-upload { font-size: 0.95em; padding: 0.4em 0.8em; } }
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --danger: #ef4444;
+      --danger-dark: #b91c1c;
+      --bg: #f3f4f6;
+      --white: #fff;
+      --shadow: 0 2px 24px rgba(0,0,0,0.08);
+      --radius: 18px;
+      --spacing: 18px;
+      --font: 'Inter', Arial, sans-serif;
+      --transition: 0.18s cubic-bezier(.4,0,.2,1);
+    }
+    body {
+      font-family: var(--font);
+      margin: 0;
+      background: var(--bg);
+      min-height: 100vh;
+      color: #222;
+    }
+    .container {
+      max-width: 900px;
+      margin: 28px auto;
+      background: var(--white);
+      box-shadow: var(--shadow);
+      padding: var(--spacing);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    h2 {
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 0.3em;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .controls label {
+      font-size: 1.07em;
+      font-weight: 500;
+      margin-right: 7px;
+    }
+    input[type="number"], input[type="file"] {
+      font-size: 1em;
+      padding: 8px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 6px;
+      background: #f9fafb;
+      transition: border var(--transition);
+      outline: none;
+      min-width: 64px;
+      box-sizing: border-box;
+    }
+    input[type="number"]:focus, input[type="file"]:focus {
+      border-color: var(--primary);
+    }
+    button {
+      font-size: 1em;
+      font-weight: 500;
+      padding: 10px 18px;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      background: var(--primary);
+      color: var(--white);
+      transition: background var(--transition), box-shadow var(--transition);
+      box-shadow: 0 1px 7px 0 rgba(37,99,235,0.04);
+    }
+    button:active {
+      background: var(--primary-dark);
+    }
+    button:disabled {
+      background: #cbd5e1;
+      color: #888;
+      cursor: not-allowed;
+    }
+    .export-btn {
+      background: #059669;
+      margin-left: auto;
+    }
+    .export-btn:active {
+      background: #047857;
+    }
+    .delete-btn {
+      background: var(--danger);
+      color: var(--white);
+      font-size: 0.98em;
+      padding: 7px 12px;
+      border-radius: 5px;
+      transition: background var(--transition);
+    }
+    .delete-btn:hover, .delete-btn:active {
+      background: var(--danger-dark);
+    }
+    .odds-input {
+      width: 75px;
+      padding: 5px 7px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 5px;
+      background: #f8fafc;
+      font-size: 1em;
+    }
+    .status, .err {
+      margin: 0 0 4px 0;
+      font-size: 1rem;
+      padding: 8px 0 2px 0;
+      min-height: 1em;
+    }
+    .status {
+      color: #059669;
+    }
+    .err {
+      color: var(--danger);
+    }
+    .progress-bar {
+      height: 8px;
+      background: #e0e7ef;
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 7px 0;
+      width: 100%;
+      position: relative;
+      display: none;
+    }
+    .progress-bar.active {
+      display: block;
+    }
+    .progress-inner {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg,#2563eb,#38bdf8 80%);
+      transition: width 0.15s linear;
+    }
+    #preview-table {
+      margin-top: 16px;
+      overflow-x: auto;
+      max-width: 100vw;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 660px;
+      background: #f8fafc;
+      margin: 0;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 10px 7px;
+      text-align: center;
+      font-size: 1em;
+    }
+    th {
+      background: var(--primary);
+      color: var(--white);
+    }
+    tr:nth-child(even) td {
+      background: #f1f5f9;
+    }
+    .accum-odds {
+      margin-top: 12px;
+      font-size: 1.14em;
+      font-weight: 600;
+      color: #059669;
+    }
+    #timestamp {
+      font-size: 0.94em;
+      color: #888;
+      margin-top: 8px;
+      text-align: right;
+    }
+    @media (max-width: 650px) {
+      .container {
+        border-radius: 0;
+        max-width: 100vw;
+        padding: 2vw 0.6vw 10vw 0.6vw;
+      }
+      h2 { font-size: 1.3em; }
+      .controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 13px;
+      }
+      table {
+        font-size: 0.95em;
+        min-width: 540px;
+      }
+    }
+    @media (max-width: 430px) {
+      .container { padding: 2vw 0.2vw 8vw 0.2vw; }
+      table { font-size: 0.89em; }
+      th, td { padding: 7px 3px; }
+      .accum-odds { font-size: 1em; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>UPLOAD MHTML FROM FOOTYSTATS</h1>
+    <h2>FootyStats.FORM DIFF 2</h2>
+    <div class="status" id="status"></div>
+    <div class="err" id="err"></div>
+    <div class="progress-bar" id="progressBar"><div class="progress-inner" id="progressInner"></div></div>
     <div class="controls">
-      <label for="file-upload" class="custom-file-upload">
-        <input id="file-upload" type="file" accept=".html,.htm,.mhtml">Upload Match File
-      </label>
+      <input type="file" id="htmlInput" accept=".html,.htm">
       <label>
-        Min Form Diff:
-        <input type="number" id="min-form-diff" value="1" min="0" step="0.01">
+        Filter by Form Difference (≥):
+        <input type="number" id="formDiffInput" value="0" step="0.01">
       </label>
-      <label>
-        Home Form Min:
-        <input type="number" id="min-home-form" value="0" min="0" step="0.01">
-      </label>
-      <label>
-        Away Form Min:
-        <input type="number" id="min-away-form" value="0" min="0" step="0.01">
-      </label>
-      <button id="apply-filter" title="Apply Filters">Filter</button>
-      <button id="reset-filter" class="secondary" title="Show All">Reset</button>
-      <button id="clear-all" class="danger" title="Delete All">Clear All</button>
-      <button class="export-btn" id="export-pdf">
-        <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"></rect><path d="M8 7v6M12 7v6"></path></svg>
-        Export as PDF
-      </button>
-      <button class="export-btn" id="export-csv" style="background:#f9a825;color:#222;">
-        <svg width="20" height="20" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"></rect><path d="M7 7h6M7 10h6M7 13h6"></path></svg>
-        Export as CSV
-      </button>
-      <button class="export-btn" id="export-png" style="background:#1e88e5;">
-        <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"></rect><path d="M8 8h4v4H8z"></path></svg>
-        Export as PNG
-      </button>
-      <button class="export-btn" id="send-telegram" style="background:#0088cc;">
-        <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="2 10 18 2 15 18 10 14 6 17 8 11 2 10"></polygon></svg>
-        Send PDF to Telegram
-      </button>
+      <button id="filterBtn" disabled>Filter</button>
+      <button class="export-btn" id="exportBtn" disabled>Export to PNG</button>
     </div>
-    <div class="accumulated-odds">
-      <span>Accumulated Odds:</span>
-      <span id="accumulated-odds-value">0.00</span>
-    </div>
-    <div style="overflow-x:auto">
-      <table id="matches-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Home Team</th>
-            <th>Home Form</th>
-            <th></th>
-            <th>Away Form</th>
-            <th>Away Team</th>
-            <th>Form Diff</th>
-            <th>Odds</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-    </div>
-    <div class="notes">
-      <strong>Note:</strong> PDF will be time & date stamped, QR code added, and "Generated by Peter".
-    </div>
+    <div id="preview-table"></div>
+    <div id="timestamp"></div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script>
-    function parseMatchDataFromHTML(html) {
-      const dom = document.createElement('div');
-      dom.innerHTML = html;
-      const matchLinks = dom.querySelectorAll('a.match.row, a.match.row.cf');
-      const matches = [];
-      matchLinks.forEach(matchEl => {
-        let dateTimeEpoch = null;
-        let parent = matchEl.closest('[data-time]');
-        if (!parent) parent = matchEl.querySelector('[data-time]');
-        if (parent) dateTimeEpoch = parent.getAttribute('data-time');
-        let dateStr = '', timeStr = '';
-        if (dateTimeEpoch) {
-          const dt = new Date(parseInt(dateTimeEpoch, 10) * 1000);
-          dateStr = dt.toISOString().slice(0,10);
-          timeStr = dt.toTimeString().slice(0,5);
-        }
-        let homeTeam = '';
-        let homeForm = '';
-        const homeDiv = matchEl.querySelector('.team.home span');
-        if (homeDiv) homeTeam = homeDiv.textContent.trim();
-        const homeFormBox = matchEl.querySelector('.team.home .form-box');
-        if (homeFormBox) homeForm = homeFormBox.textContent.trim();
-        let awayTeam = '';
-        let awayForm = '';
-        const awayDiv = matchEl.querySelector('.team.away span');
-        if (awayDiv) awayTeam = awayDiv.textContent.trim();
-        const awayFormBox = matchEl.querySelector('.team.away .form-box');
-        if (awayFormBox) awayForm = awayFormBox.textContent.trim();
-        let odds = '';
-        let oddsBlock = matchEl.querySelector('.stat.odds');
-        if (oddsBlock) {
-          const oddsSpans = oddsBlock.querySelectorAll('span.col-lg-4, span.col-sm-4');
-          if (oddsSpans.length === 3) {
-            odds = [oddsSpans[0].textContent.trim(), oddsSpans[1].textContent.trim(), oddsSpans[2].textContent.trim()];
-          }
-        }
-        if (homeTeam && awayTeam && homeForm && awayForm) {
-          matches.push({
-            date: dateStr,
-            time: timeStr,
-            homeTeam,
-            homeForm: parseFloat(homeForm) || 0,
-            awayTeam,
-            awayForm: parseFloat(awayForm) || 0,
-            odds: odds && odds.length === 3 ? odds : ['', '', ''],
-            id: Math.random().toString(36).substr(2,9)
-          });
-        }
-      });
-      return matches;
+    let matches = [], filtered = [], isParsing = false, parseAbort = false;
+
+    const htmlInput = document.getElementById('htmlInput');
+    const filterBtn = document.getElementById('filterBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const formDiffInput = document.getElementById('formDiffInput');
+    const previewTable = document.getElementById('preview-table');
+    const errDiv = document.getElementById('err');
+    const statusDiv = document.getElementById('status');
+    const progressBar = document.getElementById('progressBar');
+    const progressInner = document.getElementById('progressInner');
+    const timestampDiv = document.getElementById('timestamp');
+
+    function showStatus(msg) { statusDiv.textContent = msg; }
+    function showError(msg) { errDiv.textContent = msg; }
+    function clearStatus() { statusDiv.textContent = ""; }
+    function clearError() { errDiv.textContent = ""; }
+    function setProgress(val) {
+      progressBar.classList.add('active');
+      progressInner.style.width = (val * 100) + "%";
+      if (val >= 1 || val === 0) setTimeout(() => progressBar.classList.remove('active'), 400);
     }
 
-    let matches = [];
-    let filteredMatches = [];
-    let filterConfig = {
-      minFormDiff: 1,
-      minHomeForm: 0,
-      minAwayForm: 0
-    };
-
-    const fileInput = document.getElementById('file-upload');
-    const minFormDiffInput = document.getElementById('min-form-diff');
-    const minHomeFormInput = document.getElementById('min-home-form');
-    const minAwayFormInput = document.getElementById('min-away-form');
-    const filterBtn = document.getElementById('apply-filter');
-    const resetBtn = document.getElementById('reset-filter');
-    const clearBtn = document.getElementById('clear-all');
-    const matchesTableBody = document.querySelector('#matches-table tbody');
-    const accumulatedOddsEl = document.getElementById('accumulated-odds-value');
-    const exportPdfBtn = document.getElementById('export-pdf');
-    const exportCsvBtn = document.getElementById('export-csv');
-    const exportPngBtn = document.getElementById('export-png');
-    const sendTelegramBtn = document.getElementById('send-telegram');
-
-    fileInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
+    htmlInput.addEventListener('change', async function(event) {
+      const file = event.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const html = event.target.result;
-        matches = parseMatchDataFromHTML(html);
-        // Reset filter inputs to default or last used values
-        minFormDiffInput.value = filterConfig.minFormDiff;
-        minHomeFormInput.value = filterConfig.minHomeForm;
-        minAwayFormInput.value = filterConfig.minAwayForm;
-        filteredMatches = [...matches];
-        renderMatchTable();
-      };
-      reader.readAsText(file);
+      matches = filtered = [];
+      clearError();
+      clearStatus();
+      previewTable.innerHTML = '';
+      timestampDiv.textContent = '';
+      filterBtn.disabled = true;
+      exportBtn.disabled = true;
+
+      if (file.size > 10 * 1024 * 1024) { // 10MB
+        showStatus("Large file detected. Parsing may take a while.");
+      }
+      parseAbort = false;
+      isParsing = true;
+      setProgress(0);
+      await parseFootyStatsLargeFile(file);
     });
 
-    filterBtn.addEventListener('click', applyFilter);
-    resetBtn.addEventListener('click', () => {
-      filteredMatches = [...matches];
-      renderMatchTable();
-    });
-    clearBtn.addEventListener('click', () => {
-      matches = [];
-      filteredMatches = [];
-      renderMatchTable();
-    });
-
-    minFormDiffInput.addEventListener('input', applyFilter);
-    minHomeFormInput.addEventListener('input', applyFilter);
-    minAwayFormInput.addEventListener('input', applyFilter);
-
-    function applyFilter() {
-      filterConfig.minFormDiff = parseFloat(minFormDiffInput.value) || 0;
-      filterConfig.minHomeForm = parseFloat(minHomeFormInput.value) || 0;
-      filterConfig.minAwayForm = parseFloat(minAwayFormInput.value) || 0;
-      filteredMatches = matches.filter(m => {
-        const formDiff = Math.abs(m.homeForm - m.awayForm);
-        return (
-          formDiff >= filterConfig.minFormDiff &&
-          m.homeForm >= filterConfig.minHomeForm &&
-          m.awayForm >= filterConfig.minAwayForm
-        );
-      });
-      renderMatchTable();
-    }
-
-    function deleteMatch(matchId) {
-      matches = matches.filter(m => m.id !== matchId);
-      filteredMatches = filteredMatches.filter(m => m.id !== matchId);
-      renderMatchTable();
-    }
-
-    function renderMatchTable() {
-      matchesTableBody.innerHTML = '';
-      filteredMatches.forEach((match, idx) => {
-        const formDiff = Math.abs(match.homeForm - match.awayForm);
-        let oddsVal = parseFloat(match.odds[0]);
-        let oddsMissing = isNaN(oddsVal) || oddsVal <= 1.01;
-        matchesTableBody.innerHTML += `
-          <tr data-id="${match.id}" ${oddsMissing ? 'class="odds-missing"' : ''}>
-            <td>${match.date}</td>
-            <td>${match.time}</td>
-            <td>${match.homeTeam}</td>
-            <td><input type="number" class="home-form" step="0.01" value="${match.homeForm}"></td>
-            <td>vs</td>
-            <td><input type="number" class="away-form" step="0.01" value="${match.awayForm}"></td>
-            <td>${match.awayTeam}</td>
-            <td class="form-diff">${formDiff.toFixed(2)}</td>
-            <td><input type="number" class="odds" min="1.01" step="0.01" value="${oddsVal || ''}" placeholder="Input"></td>
-            <td><button class="delete-btn">Delete</button></td>
-          </tr>
-        `;
-      });
-      // Attach listeners
-      matchesTableBody.querySelectorAll('tr').forEach(tr => {
-        const id = tr.getAttribute('data-id');
-        tr.querySelector('.home-form').addEventListener('input', e => {
-          const v = parseFloat(e.target.value) || 0;
-          let m = filteredMatches.find(m => m.id === id);
-          m.homeForm = v;
-          let gm = matches.find(m => m.id === id);
-          if (gm) gm.homeForm = v;
-          tr.querySelector('.form-diff').textContent = Math.abs(m.homeForm - m.awayForm).toFixed(2);
-          recalculateAccumulatedOdds();
-        });
-        tr.querySelector('.away-form').addEventListener('input', e => {
-          const v = parseFloat(e.target.value) || 0;
-          let m = filteredMatches.find(m => m.id === id);
-          m.awayForm = v;
-          let gm = matches.find(m => m.id === id);
-          if (gm) gm.awayForm = v;
-          tr.querySelector('.form-diff').textContent = Math.abs(m.homeForm - m.awayForm).toFixed(2);
-          recalculateAccumulatedOdds();
-        });
-        tr.querySelector('.odds').addEventListener('input', e => {
-          const v = parseFloat(e.target.value) || '';
-          let m = filteredMatches.find(m => m.id === id);
-          m.odds[0] = v;
-          let gm = matches.find(m => m.id === id);
-          if (gm) gm.odds[0] = v;
-          recalculateAccumulatedOdds();
-        });
-        tr.querySelector('.delete-btn').addEventListener('click', () => {
-          deleteMatch(id);
-        });
-      });
-      recalculateAccumulatedOdds();
-    }
-
-    function recalculateAccumulatedOdds() {
-      let acc = 1.0;
-      let valid = false;
-      filteredMatches.forEach(m => {
-        let odds = parseFloat(m.odds[0]);
-        if (!isNaN(odds) && odds > 1.01) {
-          acc *= odds;
-          valid = true;
+    // Chunked async parsing for large files
+    async function parseFootyStatsLargeFile(file) {
+      try {
+        showStatus("Parsing file...");
+        let chunkSize = 1024 * 1024; // 1MB
+        let total = file.size, loaded = 0, html = '';
+        let reader = file.stream().getReader();
+        let decoder = new TextDecoder();
+        while (true) {
+          if (parseAbort) { showError("Parsing cancelled."); return; }
+          const {done, value} = await reader.read();
+          if (done) break;
+          loaded += value.length;
+          html += decoder.decode(value, {stream:true});
+          setProgress(loaded / total);
         }
-      });
-      accumulatedOddsEl.textContent = valid ? acc.toFixed(2) : '0.00';
-    }
-
-    function syncTableToMatches() {
-      matchesTableBody.querySelectorAll('tr').forEach(tr => {
-        const id = tr.getAttribute('data-id');
-        let m = filteredMatches.find(m => m.id === id);
-        if (!m) return;
-        m.homeForm = parseFloat(tr.querySelector('.home-form').value) || 0;
-        m.awayForm = parseFloat(tr.querySelector('.away-form').value) || 0;
-        m.odds[0] = parseFloat(tr.querySelector('.odds').value) || '';
-      });
-    }
-
-    // --- EXPORT PDF/CSV/PNG/TELEGRAM LOGIC ---
-
-    let lastPdfBlob = null;
-    let lastPdfName = '';
-
-    exportPdfBtn.addEventListener('click', function() {
-      if (!filteredMatches.length) return alert('No matches to export');
-      syncTableToMatches();
-      generatePDF(filteredMatches);
-    });
-
-    exportCsvBtn.addEventListener('click', function() {
-      if (!filteredMatches.length) return alert('No matches to export');
-      syncTableToMatches();
-      generateCSV(filteredMatches);
-    });
-
-    exportPngBtn.addEventListener('click', function() {
-      html2canvas(document.querySelector("#matches-table"), {backgroundColor: null}).then(canvas => {
-        let link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = 'multibet_table.png';
-        link.click();
-      });
-    });
-
-    sendTelegramBtn.addEventListener('click', function() {
-      if (!filteredMatches.length) return alert('No matches to export');
-      syncTableToMatches();
-      generatePDF(filteredMatches, function(blob, filename) {
-        sendPdfToTelegram(blob, filename);
-      });
-    });
-
-    function generatePDF(matches, cb) {
-      const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-      const now = new Date();
-      const dateStr = now.toLocaleDateString();
-      const timeStr = now.toLocaleTimeString();
-      let qr = new window.QRious({
-        value: `Generated by Peter on ${dateStr} at ${timeStr}`,
-        size: 90
-      });
-      doc.addImage(qr.toDataURL(), 'PNG', 40, 18, 70, 70);
-      doc.setFontSize(19);
-      doc.setTextColor(30,136,229);
-      doc.text('Football Multibet Slip', 140, 48);
-      doc.setFontSize(11);
-      doc.setTextColor(67,160,71);
-      doc.text(`Generated by Peter`, 140, 68);
-      doc.setTextColor(44,44,44);
-      doc.text(`Date: ${dateStr}  Time: ${timeStr}`, 140, 88);
-      const startY = 105;
-      let colX = [40, 110, 180, 340, 410, 470, 570, 660, 730, 820];
-      doc.setFontSize(10);
-      doc.setFillColor(30,136,229);
-      doc.setTextColor(255,255,255);
-      doc.rect(40, startY, 790, 25, 'F');
-      doc.text(['Date','Time','Home','Home Form','vs','Away Form','Away','Form Diff','Odds',''], colX, startY+17);
-      doc.setFontSize(10);
-      doc.setTextColor(44,44,44);
-      let y = startY + 34;
-      matches.forEach(m => {
-        const formDiff = Math.abs(m.homeForm - m.awayForm);
-        doc.text(m.date, colX[0], y);
-        doc.text(m.time, colX[1], y);
-        doc.text(m.homeTeam, colX[2], y);
-        doc.text(m.homeForm.toString(), colX[3], y);
-        doc.text('vs', colX[4], y);
-        doc.text(m.awayForm.toString(), colX[5], y);
-        doc.text(m.awayTeam, colX[6], y);
-        doc.text(formDiff.toFixed(2), colX[7], y);
-        doc.text(m.odds[0].toString(), colX[8], y);
-        y += 21;
-        if (y > 530) {
-          doc.addPage();
-          y = 60;
-        }
-      });
-      doc.setFontSize(12);
-      doc.setTextColor(67,160,71);
-      doc.text('Accumulated Odds: ' + accumulatedOddsEl.textContent, 40, y+30);
-      doc.setFontSize(10);
-      doc.setTextColor(120,120,120);
-      doc.text('Generated by Peter', 40, y+50);
-      doc.text('This slip is generated automatically. For reference use only.', 40, y+65);
-
-      let pdfName = `multibet_${now.toISOString().slice(0,10)}_${now.getHours()}${now.getMinutes()}.pdf`;
-      if (cb) {
-        doc.save(pdfName, {returnPromise: true}).then(() => {
-          doc.output('blob', {callback: function(blob) {
-            lastPdfBlob = blob;
-            lastPdfName = pdfName;
-            cb(blob, pdfName);
-          }});
-        });
-      } else {
-        doc.save(pdfName);
-        doc.output('blob', {callback: function(blob) {
-          lastPdfBlob = blob;
-          lastPdfName = pdfName;
-        }});
+        html += decoder.decode(); // flush
+        setProgress(1);
+        await new Promise(res=>setTimeout(res, 100)); // let progress bar fill
+        parseFootyStats(html);
+      } catch (e) {
+        showError("Failed to parse file: " + e.message);
+      } finally {
+        isParsing = false;
+        setProgress(0);
       }
     }
 
-    function generateCSV(matches) {
-      let csv = [
-        ['Date','Time','Home Team','Home Form','vs','Away Form','Away Team','Form Diff','Odds']
-      ];
-      matches.forEach(m => {
-        const formDiff = Math.abs(m.homeForm - m.awayForm);
-        csv.push([
-          m.date,
-          m.time,
-          m.homeTeam,
-          m.homeForm,
-          'vs',
-          m.awayForm,
-          m.awayTeam,
-          formDiff.toFixed(2),
-          m.odds[0]
-        ]);
-      });
-      const now = new Date();
-      let csvContent = csv.map(row => row.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `multibet_${now.toISOString().slice(0,10)}_${now.getHours()}${now.getMinutes()}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    // Cancel file parsing if user changes file
+    htmlInput.addEventListener('click', function(){ if(isParsing) parseAbort = true; });
 
-    function sendPdfToTelegram(pdfBlob, filename) {
-      const formData = new FormData();
-      formData.append('chat_id', '-1002712270878'); // Your channel ID
-      formData.append('document', pdfBlob, filename);
-      formData.append('caption', 'Football Multibet Slip PDF - generated by Peter');
-      fetch('https://api.telegram.org/bot7825435580:AAGc45ZosIvFSQaB7q2Jsy9e9wsEFGQUBck/sendDocument', {
-        method: 'POST',
-        body: formData
-      }).then(response => response.json())
-        .then(data => {
-          if (data.ok) {
-            alert('PDF sent to Telegram channel!');
-          } else {
-            alert('Failed to send to Telegram: ' + JSON.stringify(data));
+    function parseFootyStats(html) {
+      matches = [];
+      clearError();
+      showStatus("Parsing matches...");
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const matchLinks = doc.querySelectorAll('a.match.row');
+      if (!matchLinks.length) {
+        showError("No matches found. Is this a FootyStats HTML?");
+        filterBtn.disabled = true;
+        exportBtn.disabled = true;
+        clearStatus();
+        return;
+      }
+      // Parse in small batches to prevent UI block
+      let i = 0;
+      function parseBatch() {
+        let batchCount = 80, count = 0;
+        for (; i < matchLinks.length && count < batchCount; ++i, ++count) {
+          const match = matchLinks[i];
+          const homeTeam = match.querySelector('.team.home span')?.textContent.trim() || '';
+          const homeForm = parseFloat(match.querySelector('.team.home .form-box')?.textContent.trim() || '0');
+          const awayTeam = match.querySelector('.team.away span')?.textContent.trim() || '';
+          const awayForm = parseFloat(match.querySelector('.team.away .form-box')?.textContent.trim() || '0');
+          let time = '', dateDiv = match.querySelector('.date, [data-time]');
+          if (dateDiv) {
+            if (dateDiv.dataset.time) {
+              try {
+                let t = parseInt(dateDiv.dataset.time);
+                if (!isNaN(t)) {
+                  const d = new Date(t * 1000);
+                  time = d.toLocaleString();
+                }
+              } catch {}
+            }
+            if (!time) time = dateDiv.textContent.trim();
           }
-        }).catch(err => {
-          alert('Telegram send error: ' + err);
-        });
+          let oddsSpans = match.querySelectorAll('.stat.odds .hover-modal-parent');
+          let homeOdds = '', drawOdds = '', awayOdds = '';
+          if (oddsSpans.length >= 3) {
+            homeOdds = oddsSpans[0].childNodes[0]?.nodeType === 3 ? oddsSpans[0].childNodes[0].textContent.trim() : oddsSpans[0].textContent.trim();
+            drawOdds = oddsSpans[1].childNodes[0]?.nodeType === 3 ? oddsSpans[1].childNodes[0].textContent.trim() : oddsSpans[1].textContent.trim();
+            awayOdds = oddsSpans[2].childNodes[0]?.nodeType === 3 ? oddsSpans[2].childNodes[0].textContent.trim() : oddsSpans[2].textContent.trim();
+            if (!parseFloat(homeOdds)) homeOdds = oddsSpans[0].textContent.match(/[\d.]+/)?.[0] || '';
+            if (!parseFloat(drawOdds)) drawOdds = oddsSpans[1].textContent.match(/[\d.]+/)?.[0] || '';
+            if (!parseFloat(awayOdds)) awayOdds = oddsSpans[2].textContent.match(/[\d.]+/)?.[0] || '';
+          }
+          if (!homeOdds || !drawOdds || !awayOdds) {
+            let oddsNums = Array.from(match.querySelectorAll('.stat.odds')).map(x => x.textContent.match(/[\d.]+/g)).flat().filter(Boolean);
+            if (oddsNums.length >= 3) [homeOdds, drawOdds, awayOdds] = oddsNums.slice(0, 3);
+          }
+          if (homeTeam && awayTeam) {
+            matches.push({
+              home: homeTeam, homeForm, away: awayTeam, awayForm, time,
+              homeOdds: parseFloat(homeOdds), drawOdds: parseFloat(drawOdds), awayOdds: parseFloat(awayOdds)
+            });
+          }
+        }
+        if (i < matchLinks.length) {
+          setProgress(i / matchLinks.length);
+          showStatus(`Parsing matches... (${i}/${matchLinks.length})`);
+          setTimeout(parseBatch, 0);
+        } else {
+          showStatus("Matches loaded! Set a filter and click Filter.");
+          filterBtn.disabled = false;
+          exportBtn.disabled = true;
+          previewTable.innerHTML = '<em>Table loaded, enter filter and click Filter.</em>';
+          timestampDiv.textContent = '';
+          setProgress(1);
+          setTimeout(()=>setProgress(0), 500);
+        }
+      }
+      parseBatch();
     }
 
-    matches = [];
-    filteredMatches = [];
-    renderMatchTable();
+    function getWinningOdds(match) {
+      if (match.homeForm > match.awayForm) return { team: match.home, odds: match.homeOdds };
+      else if (match.awayForm > match.homeForm) return { team: match.away, odds: match.awayOdds };
+      else return { team: 'Draw', odds: match.drawOdds };
+    }
+
+    // UPDATED FILTER: exclude matches with brackets in team names
+    filterBtn.addEventListener('click', function () {
+      let formDiff = Number(formDiffInput.value);
+      filtered = [];
+      for (const m of matches) {
+        // Exclude any match where home or away team contains brackets (e.g., '(' or ')')
+        if (m.home.includes('(') || m.home.includes(')') || m.away.includes('(') || m.away.includes(')')) {
+          continue;
+        }
+        let diff = Math.abs(m.homeForm - m.awayForm);
+        if (diff >= formDiff) {
+          let winning = getWinningOdds(m);
+          filtered.push({
+            teams: `${m.home} vs ${m.away}`,
+            time: m.time,
+            formDiff: diff,
+            winningTeam: winning.team,
+            winningOdds: winning.odds
+          });
+        }
+      }
+      renderTable();
+      showStatus(filtered.length ? "Filtered " + filtered.length + " matches." : "No matches found for this filter.");
+    });
+
+    function renderTable() {
+      if (filtered.length === 0) {
+        previewTable.innerHTML = '<em>No matches found for filter.</em>';
+        exportBtn.disabled = true;
+        timestampDiv.textContent = '';
+        return;
+      }
+      let html = `<table id="result-table">
+        <tr>
+          <th>Teams</th>
+          <th>Time</th>
+          <th>Form Diff</th>
+          <th>Winning Odds</th>
+          <th>Action</th>
+        </tr>`;
+      filtered.forEach((f, index) => {
+        const isValidOdds = !isNaN(f.winningOdds) && f.winningOdds > 0;
+        const oddsDisplay = isValidOdds
+          ? `<b>${f.winningTeam}</b>: ${f.winningOdds}`
+          : `<b>${f.winningTeam}</b>: <input type="number" step="0.01" min="1.01" class="odds-input" data-index="${index}" placeholder="Enter odds">`;
+        html += `<tr data-index="${index}">
+          <td>${f.teams}</td>
+          <td>${f.time}</td>
+          <td>${f.formDiff.toFixed(2)}</td>
+          <td>${oddsDisplay}</td>
+          <td><button class="delete-btn" data-index="${index}">Delete</button></td>
+        </tr>`;
+      });
+      html += `</table>`;
+      const totalOdds = filtered.reduce((acc, f) => {
+        const val = parseFloat(f.winningOdds);
+        return acc * (isNaN(val) || val <= 0 ? 1 : val);
+      }, 1).toFixed(2);
+      html += `<div class="accum-odds"><span>Accumulated Odds:</span> <span id="accumulated-odds">${totalOdds}</span></div>`;
+      previewTable.innerHTML = html;
+      exportBtn.disabled = false;
+      timestampDiv.textContent = 'Updated: ' + (new Date()).toLocaleString();
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          let idx = parseInt(this.getAttribute('data-index'));
+          if (!isNaN(idx)) {
+            filtered.splice(idx, 1);
+            renderTable();
+          }
+        });
+      });
+      document.querySelectorAll('.odds-input').forEach(input => {
+        input.addEventListener('input', function () {
+          const idx = parseInt(this.getAttribute('data-index'));
+          const val = parseFloat(this.value);
+          if (!isNaN(idx) && !isNaN(val) && val > 0) {
+            filtered[idx].winningOdds = val;
+            updateAccumulatedOdds();
+          }
+        });
+      });
+    }
+
+    function updateAccumulatedOdds() {
+      const total = filtered.reduce((acc, f) => {
+        const val = parseFloat(f.winningOdds);
+        return acc * (isNaN(val) || val <= 0 ? 1 : val);
+      }, 1).toFixed(2);
+      const oddsDisplay = document.getElementById('accumulated-odds');
+      if (oddsDisplay) oddsDisplay.textContent = total;
+    }
+
+    // Export PNG: Export the full table content, not just visible/overflowing area.
+    exportBtn.addEventListener('click', function () {
+      let table = document.getElementById('result-table');
+      if (!table) return;
+      // Clone the table and style for full width
+      let tableClone = table.cloneNode(true);
+      tableClone.style.width = "auto";
+      tableClone.style.minWidth = "660px";
+      tableClone.style.background = "#fff";
+      // Clone accumulated odds
+      let accum = document.querySelector('.accum-odds');
+      let accumClone = accum ? accum.cloneNode(true) : null;
+      // Timestamp
+      let tsText = timestampDiv.textContent;
+      // Build export container
+      let wrap = document.createElement('div');
+      wrap.style.background = "#fff";
+      wrap.style.padding = "18px";
+      wrap.style.borderRadius = "10px";
+      wrap.style.position = "fixed";
+      wrap.style.top = "-9999px";
+      wrap.style.left = "-9999px";
+      wrap.style.zIndex = "9999";
+      wrap.style.width = "max-content";
+      wrap.style.maxWidth = "none";
+      wrap.style.boxSizing = "border-box";
+      wrap.appendChild(tableClone);
+      if (accumClone) wrap.appendChild(accumClone);
+      let ts = document.createElement('div');
+      ts.style.marginTop = "10px";
+      ts.style.fontSize = "13px";
+      ts.style.color = "#666";
+      ts.textContent = tsText;
+      wrap.appendChild(ts);
+      document.body.appendChild(wrap);
+      html2canvas(wrap, {backgroundColor: "#fff", scale: 2}).then(canvas => {
+        let link = document.createElement('a');
+        link.download = 'filtered_matches.png';
+        link.href = canvas.toDataURL();
+        link.click();
+        document.body.removeChild(wrap);
+      });
+    });
   </script>
 </body>
 </html>
