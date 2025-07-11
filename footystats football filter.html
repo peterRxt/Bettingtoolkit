@@ -17,6 +17,8 @@
       --spacing: 18px;
       --font: 'Inter', Arial, sans-serif;
       --transition: 0.18s cubic-bezier(.4,0,.2,1);
+      --odds-green: #bbf7d0;
+      --odds-yellow: #fef9c3;
     }
     body {
       font-family: var(--font);
@@ -52,7 +54,7 @@
       font-weight: 500;
       margin-right: 7px;
     }
-    input[type="number"], input[type="file"] {
+    input[type="number"], input[type="file"], input[type="text"] {
       font-size: 1em;
       padding: 8px 14px;
       border: 1.5px solid #e5e7eb;
@@ -63,7 +65,7 @@
       min-width: 64px;
       box-sizing: border-box;
     }
-    input[type="number"]:focus, input[type="file"]:focus {
+    input[type="number"]:focus, input[type="file"]:focus, input[type="text"]:focus {
       border-color: var(--primary);
     }
     button {
@@ -180,6 +182,8 @@
       margin-top: 8px;
       text-align: right;
     }
+    .odds-green { background: var(--odds-green) !important; }
+    .odds-yellow { background: var(--odds-yellow) !important; }
     @media (max-width: 650px) {
       .container {
         border-radius: 0;
@@ -207,15 +211,20 @@
 </head>
 <body>
   <div class="container">
-    <h2>FootyStats.FORM DIFF 2</h2>
+    <h1>FOOTYSTATS.</h1>
+    <h2>BEST FILTER OVER 1.5</h2>
     <div class="status" id="status"></div>
     <div class="err" id="err"></div>
     <div class="progress-bar" id="progressBar"><div class="progress-inner" id="progressInner"></div></div>
     <div class="controls">
       <input type="file" id="htmlInput" accept=".html,.htm">
       <label>
-        Filter by Form Difference (≥):
+        ENTER FILTER VALUE (≥):
         <input type="number" id="formDiffInput" value="0" step="0.01">
+      </label>
+      <label>
+        TIME
+        <input type="text" id="fromTimeInput" placeholder="e.g. 1600">
       </label>
       <button id="filterBtn" disabled>Filter</button>
       <button class="export-btn" id="exportBtn" disabled>Export to PNG</button>
@@ -232,6 +241,7 @@
     const filterBtn = document.getElementById('filterBtn');
     const exportBtn = document.getElementById('exportBtn');
     const formDiffInput = document.getElementById('formDiffInput');
+    const fromTimeInput = document.getElementById('fromTimeInput');
     const previewTable = document.getElementById('preview-table');
     const errDiv = document.getElementById('err');
     const statusDiv = document.getElementById('status');
@@ -269,7 +279,6 @@
       await parseFootyStatsLargeFile(file);
     });
 
-    // Chunked async parsing for large files
     async function parseFootyStatsLargeFile(file) {
       try {
         showStatus("Parsing file...");
@@ -297,7 +306,6 @@
       }
     }
 
-    // Cancel file parsing if user changes file
     htmlInput.addEventListener('click', function(){ if(isParsing) parseAbort = true; });
 
     function parseFootyStats(html) {
@@ -314,7 +322,6 @@
         clearStatus();
         return;
       }
-      // Parse in small batches to prevent UI block
       let i = 0;
       function parseBatch() {
         let batchCount = 80, count = 0;
@@ -381,16 +388,62 @@
       else return { team: 'Draw', odds: match.drawOdds };
     }
 
-    // UPDATED FILTER: exclude matches with brackets in team names, sort by formDiff descending, and itemize
+    // Helper: parse time string like "16:00", "1600", "4:00 pm", etc. to minutes since midnight
+    function parseTimeToMinutes(timeStr) {
+      if (!timeStr) return null;
+      // Try to extract HH:MM
+      let m = timeStr.match(/(\d{1,2}):(\d{2})/);
+      if (m) {
+        return parseInt(m[1],10)*60 + parseInt(m[2],10);
+      }
+      // Try to extract 4-digit time, e.g. 1600, 0930
+      m = timeStr.match(/(\d{2})(\d{2})/);
+      if (m && m[0].length === 4) {
+        return parseInt(m[1],10)*60 + parseInt(m[2],10);
+      }
+      // Try AM/PM
+      m = timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+      if (m) {
+        let h = parseInt(m[1],10), min = parseInt(m[2],10);
+        if (/pm/i.test(m[3]) && h < 12) h += 12;
+        if (/am/i.test(m[3]) && h === 12) h = 0;
+        return h*60 + min;
+      }
+      return null;
+    }
+
+    function getOddsClass(odds) {
+      if (!odds || isNaN(odds) || odds <= 0) return "";
+      if (odds < 1.5) return "odds-green";
+      return "odds-yellow";
+    }
+
     filterBtn.addEventListener('click', function () {
       let formDiff = Number(formDiffInput.value);
+      let fromTimeRaw = fromTimeInput.value.trim();
+      let fromTimeMinutes = null;
+      if (fromTimeRaw) {
+        // Accept plain "1600" or "16:00"
+        if (/^\d{4}$/.test(fromTimeRaw)) {
+          fromTimeMinutes = parseInt(fromTimeRaw.slice(0,2),10)*60 + parseInt(fromTimeRaw.slice(2),10);
+        } else if (/^\d{1,2}:\d{2}$/.test(fromTimeRaw)) {
+          let [h,m] = fromTimeRaw.split(':');
+          fromTimeMinutes = parseInt(h,10)*60 + parseInt(m,10);
+        }
+      }
       filtered = [];
       for (const m of matches) {
-        // Exclude any match where home or away team contains brackets (e.g., '(' or ')')
         if (m.home.includes('(') || m.home.includes(')') || m.away.includes('(') || m.away.includes(')')) {
           continue;
         }
         let diff = Math.abs(m.homeForm - m.awayForm);
+
+        // Time filter (fromTime upwards, 24hr)
+        if (fromTimeMinutes !== null) {
+          let matchMins = parseTimeToMinutes(m.time);
+          if (matchMins === null || matchMins < fromTimeMinutes) continue;
+        }
+
         if (diff >= formDiff) {
           let winning = getWinningOdds(m);
           filtered.push({
@@ -402,7 +455,6 @@
           });
         }
       }
-      // Sort in descending order of formDiff
       filtered.sort((a, b) => b.formDiff - a.formDiff);
       renderTable();
       showStatus(filtered.length ? "Filtered " + filtered.length + " matches." : "No matches found for this filter.");
@@ -429,12 +481,13 @@
         const oddsDisplay = isValidOdds
           ? `<b>${f.winningTeam}</b>: ${f.winningOdds}`
           : `<b>${f.winningTeam}</b>: <input type="number" step="0.01" min="1.01" class="odds-input" data-index="${index}" placeholder="Enter odds">`;
+        const oddsClass = isValidOdds ? getOddsClass(f.winningOdds) : "";
         html += `<tr data-index="${index}">
           <td>${index + 1}</td>
           <td>${f.teams}</td>
           <td>${f.time}</td>
           <td>${f.formDiff.toFixed(2)}</td>
-          <td>${oddsDisplay}</td>
+          <td class="${oddsClass}">${oddsDisplay}</td>
           <td><button class="delete-btn" data-index="${index}">Delete</button></td>
         </tr>`;
       });
@@ -452,7 +505,6 @@
           let idx = parseInt(this.getAttribute('data-index'));
           if (!isNaN(idx)) {
             filtered.splice(idx, 1);
-            // Re-sort and re-number after deletion
             filtered.sort((a, b) => b.formDiff - a.formDiff);
             renderTable();
           }
@@ -479,21 +531,16 @@
       if (oddsDisplay) oddsDisplay.textContent = total;
     }
 
-    // Export PNG: Export the full table content, not just visible/overflowing area.
     exportBtn.addEventListener('click', function () {
       let table = document.getElementById('result-table');
       if (!table) return;
-      // Clone the table and style for full width
       let tableClone = table.cloneNode(true);
       tableClone.style.width = "auto";
       tableClone.style.minWidth = "660px";
       tableClone.style.background = "#fff";
-      // Clone accumulated odds
       let accum = document.querySelector('.accum-odds');
       let accumClone = accum ? accum.cloneNode(true) : null;
-      // Timestamp
       let tsText = timestampDiv.textContent;
-      // Build export container
       let wrap = document.createElement('div');
       wrap.style.background = "#fff";
       wrap.style.padding = "18px";
