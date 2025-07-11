@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>FootyStats Match Filter & Extractor</title>
+  <title>FootyStats Match Filter</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     :root {
@@ -211,20 +211,23 @@
 </head>
 <body>
   <div class="container">
-    <h1>FOOTYSTATS.</h1>
-    <h2>BEST FILTER OVER 1.5</h2>
+    <h2>FOOTYSTATS</h2>
+    <H1>BEST FILTER FROM 1.5</H1>
     <div class="status" id="status"></div>
     <div class="err" id="err"></div>
     <div class="progress-bar" id="progressBar"><div class="progress-inner" id="progressInner"></div></div>
     <div class="controls">
       <input type="file" id="htmlInput" accept=".html,.htm">
       <label>
-        ENTER FILTER VALUE (≥):
+        ENTER VALUE
         <input type="number" id="formDiffInput" value="0" step="0.01">
       </label>
+      <!-- TIME INTERVAL FILTER -->
       <label>
-        TIME
-        <input type="text" id="fromTimeInput" placeholder="e.g. 1600">
+        Time Interval (24hr): 
+        <input type="text" id="startTimeInput" placeholder="e.g. 0000">
+        to
+        <input type="text" id="endTimeInput" placeholder="e.g. 1100">
       </label>
       <button id="filterBtn" disabled>Filter</button>
       <button class="export-btn" id="exportBtn" disabled>Export to PNG</button>
@@ -241,7 +244,9 @@
     const filterBtn = document.getElementById('filterBtn');
     const exportBtn = document.getElementById('exportBtn');
     const formDiffInput = document.getElementById('formDiffInput');
-    const fromTimeInput = document.getElementById('fromTimeInput');
+    // TIME INTERVAL FILTER
+    const startTimeInput = document.getElementById('startTimeInput');
+    const endTimeInput = document.getElementById('endTimeInput');
     const previewTable = document.getElementById('preview-table');
     const errDiv = document.getElementById('err');
     const statusDiv = document.getElementById('status');
@@ -388,7 +393,7 @@
       else return { team: 'Draw', odds: match.drawOdds };
     }
 
-    // Helper: parse time string like "16:00", "1600", "4:00 pm", etc. to minutes since midnight
+    // Parse a time string "16:00", "1600", "4:00 pm", etc. to minutes since midnight
     function parseTimeToMinutes(timeStr) {
       if (!timeStr) return null;
       // Try to extract HH:MM
@@ -420,17 +425,28 @@
 
     filterBtn.addEventListener('click', function () {
       let formDiff = Number(formDiffInput.value);
-      let fromTimeRaw = fromTimeInput.value.trim();
-      let fromTimeMinutes = null;
-      if (fromTimeRaw) {
-        // Accept plain "1600" or "16:00"
-        if (/^\d{4}$/.test(fromTimeRaw)) {
-          fromTimeMinutes = parseInt(fromTimeRaw.slice(0,2),10)*60 + parseInt(fromTimeRaw.slice(2),10);
-        } else if (/^\d{1,2}:\d{2}$/.test(fromTimeRaw)) {
-          let [h,m] = fromTimeRaw.split(':');
-          fromTimeMinutes = parseInt(h,10)*60 + parseInt(m,10);
+
+      // TIME INTERVAL FILTER
+      let startTimeRaw = startTimeInput.value.trim();
+      let endTimeRaw = endTimeInput.value.trim();
+      let startTimeMinutes = null, endTimeMinutes = null;
+      if (startTimeRaw) {
+        if (/^\d{4}$/.test(startTimeRaw)) {
+          startTimeMinutes = parseInt(startTimeRaw.slice(0,2),10)*60 + parseInt(startTimeRaw.slice(2),10);
+        } else if (/^\d{1,2}:\d{2}$/.test(startTimeRaw)) {
+          let [h,m] = startTimeRaw.split(':');
+          startTimeMinutes = parseInt(h,10)*60 + parseInt(m,10);
         }
       }
+      if (endTimeRaw) {
+        if (/^\d{4}$/.test(endTimeRaw)) {
+          endTimeMinutes = parseInt(endTimeRaw.slice(0,2),10)*60 + parseInt(endTimeRaw.slice(2),10);
+        } else if (/^\d{1,2}:\d{2}$/.test(endTimeRaw)) {
+          let [h,m] = endTimeRaw.split(':');
+          endTimeMinutes = parseInt(h,10)*60 + parseInt(m,10);
+        }
+      }
+
       filtered = [];
       for (const m of matches) {
         if (m.home.includes('(') || m.home.includes(')') || m.away.includes('(') || m.away.includes(')')) {
@@ -438,10 +454,12 @@
         }
         let diff = Math.abs(m.homeForm - m.awayForm);
 
-        // Time filter (fromTime upwards, 24hr)
-        if (fromTimeMinutes !== null) {
+        // TIME INTERVAL FILTER
+        if (startTimeMinutes !== null || endTimeMinutes !== null) {
           let matchMins = parseTimeToMinutes(m.time);
-          if (matchMins === null || matchMins < fromTimeMinutes) continue;
+          if (matchMins === null) continue;
+          if (startTimeMinutes !== null && matchMins < startTimeMinutes) continue;
+          if (endTimeMinutes !== null && matchMins > endTimeMinutes) continue;
         }
 
         if (diff >= formDiff) {
