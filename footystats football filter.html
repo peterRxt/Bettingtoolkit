@@ -381,7 +381,7 @@
       else return { team: 'Draw', odds: match.drawOdds };
     }
 
-    // UPDATED FILTER: exclude matches with brackets in team names
+    // UPDATED FILTER: exclude matches with brackets in team names, sort by formDiff descending, and itemize
     filterBtn.addEventListener('click', function () {
       let formDiff = Number(formDiffInput.value);
       filtered = [];
@@ -402,6 +402,8 @@
           });
         }
       }
+      // Sort in descending order of formDiff
+      filtered.sort((a, b) => b.formDiff - a.formDiff);
       renderTable();
       showStatus(filtered.length ? "Filtered " + filtered.length + " matches." : "No matches found for this filter.");
     });
@@ -415,6 +417,7 @@
       }
       let html = `<table id="result-table">
         <tr>
+          <th>#</th>
           <th>Teams</th>
           <th>Time</th>
           <th>Form Diff</th>
@@ -427,6 +430,7 @@
           ? `<b>${f.winningTeam}</b>: ${f.winningOdds}`
           : `<b>${f.winningTeam}</b>: <input type="number" step="0.01" min="1.01" class="odds-input" data-index="${index}" placeholder="Enter odds">`;
         html += `<tr data-index="${index}">
+          <td>${index + 1}</td>
           <td>${f.teams}</td>
           <td>${f.time}</td>
           <td>${f.formDiff.toFixed(2)}</td>
@@ -448,6 +452,8 @@
           let idx = parseInt(this.getAttribute('data-index'));
           if (!isNaN(idx)) {
             filtered.splice(idx, 1);
+            // Re-sort and re-number after deletion
+            filtered.sort((a, b) => b.formDiff - a.formDiff);
             renderTable();
           }
         });
