@@ -5,7 +5,6 @@
   <title>FootyStats Match Filter & Extractor</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    /* ...existing styles... */
     :root {
       --primary: #2563eb;
       --primary-dark: #1e40af;
@@ -20,78 +19,104 @@
       --transition: 0.18s cubic-bezier(.4,0,.2,1);
       --odds-green: #bbf7d0;
       --odds-yellow: #fef9c3;
+      --high-diff: #dcfce7;
+      --medium-diff: #fef9c3;
     }
     body {
       font-family: var(--font);
       margin: 0;
-      background: var(--bg);
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
       min-height: 100vh;
       color: #222;
+      padding: 20px;
+      box-sizing: border-box;
     }
     .container {
       max-width: 900px;
       margin: 28px auto;
       background: var(--white);
       box-shadow: var(--shadow);
-      padding: var(--spacing);
+      padding: 28px;
       border-radius: var(--radius);
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 22px;
     }
     h2 {
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: -1px;
       margin-bottom: 0.3em;
+      color: #1e293b;
+      text-align: center;
+      font-size: 1.8rem;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 15px;
       align-items: center;
+      background: #f8fafc;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
     .controls label {
       font-size: 1.07em;
       font-weight: 500;
       margin-right: 7px;
+      color: #334155;
     }
     input[type="number"], input[type="file"], input[type="text"] {
       font-size: 1em;
-      padding: 8px 14px;
-      border: 1.5px solid #e5e7eb;
-      border-radius: 6px;
-      background: #f9fafb;
-      transition: border var(--transition);
+      padding: 10px 16px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+      transition: all var(--transition);
       outline: none;
-      min-width: 64px;
+      min-width: 80px;
       box-sizing: border-box;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
     input[type="number"]:focus, input[type="file"]:focus, input[type="text"]:focus {
       border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
     button {
-      font-size: 1em;
-      font-weight: 500;
-      padding: 10px 18px;
-      border-radius: 7px;
+      font-size: 1.02em;
+      font-weight: 600;
+      padding: 11px 22px;
+      border-radius: 8px;
       border: none;
       cursor: pointer;
       background: var(--primary);
       color: var(--white);
-      transition: background var(--transition), box-shadow var(--transition);
-      box-shadow: 0 1px 7px 0 rgba(37,99,235,0.04);
+      transition: all var(--transition);
+      box-shadow: 0 2px 6px rgba(37,99,235,0.15);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(37,99,235,0.2);
     }
     button:active {
       background: var(--primary-dark);
+      transform: translateY(0);
     }
     button:disabled {
       background: #cbd5e1;
       color: #888;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
     .export-btn {
       background: #059669;
       margin-left: auto;
+      box-shadow: 0 2px 6px rgba(5,150,105,0.15);
+    }
+    .export-btn:hover {
+      box-shadow: 0 4px 8px rgba(5,150,105,0.2);
     }
     .export-btn:active {
       background: #047857;
@@ -100,129 +125,255 @@
       background: var(--danger);
       color: var(--white);
       font-size: 0.98em;
-      padding: 7px 12px;
-      border-radius: 5px;
-      transition: background var(--transition);
+      padding: 8px 14px;
+      border-radius: 6px;
+      transition: all var(--transition);
     }
     .delete-btn:hover, .delete-btn:active {
       background: var(--danger-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(239,68,68,0.2);
     }
     .odds-input {
-      width: 75px;
-      padding: 5px 7px;
+      width: 80px;
+      padding: 6px 10px;
       border: 1.5px solid #d1d5db;
-      border-radius: 5px;
+      border-radius: 6px;
       background: #f8fafc;
       font-size: 1em;
     }
     .manual-section {
       margin-top: 20px;
-      padding: 15px;
+      padding: 20px;
       background: #f3f8ff;
-      border-radius: 8px;
+      border-radius: 12px;
       box-shadow: 0 1px 7px 0 rgba(37,99,235,0.04);
+      border: 1px solid #dbeafe;
     }
     .manual-section h3 {
       margin-top: 0;
-      font-size: 1.1em;
+      font-size: 1.2em;
       font-weight: 600;
-      color: #115e59;
+      color: #1e40af;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #dbeafe;
     }
     .manual-controls {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       flex-wrap: wrap;
     }
     .manual-controls input[type="text"], .manual-controls input[type="number"] {
-      min-width: 100px;
-      padding: 6px 8px;
+      min-width: 120px;
+      padding: 9px 12px;
       font-size: 0.98em;
     }
     .manual-add-btn {
       background: #2563eb;
       color: #fff;
       border: none;
-      border-radius: 5px;
-      padding: 7px 14px;
+      border-radius: 6px;
+      padding: 9px 16px;
       font-size: 1em;
+      font-weight: 600;
     }
     .manual-add-btn:active {
       background: #1946b8;
     }
     .odds-green { background: var(--odds-green) !important; }
     .odds-yellow { background: var(--odds-yellow) !important; }
+    .high-diff { background: var(--high-diff) !important; font-weight: 600; }
+    .medium-diff { background: var(--medium-diff) !important; }
     .accum-odds {
-      margin-top: 12px;
-      font-size: 1.14em;
-      font-weight: 600;
+      margin-top: 16px;
+      font-size: 1.18em;
+      font-weight: 700;
       color: #059669;
+      padding: 10px 15px;
+      background: #f0fdf4;
+      border-radius: 8px;
+      display: inline-block;
     }
     #timestamp {
       font-size: 0.94em;
-      color: #888;
+      color: #64748b;
       margin-top: 8px;
       text-align: right;
+      font-style: italic;
     }
+    
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 0.96em;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th {
+      background: #1e40af;
+      color: white;
+      font-weight: 600;
+      text-align: left;
+      padding: 14px 16px;
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    tr:hover {
+      background-color: #f1f5f9;
+    }
+    
+    .time-display {
+      font-family: 'Courier New', monospace;
+      background: #eff6ff;
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-size: 0.95em;
+      font-weight: 500;
+      color: #1d4ed8;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-inner {
+      height: 100%;
+      background: #2563eb;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .app-header {
+      text-align: center;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 15px;
+    }
+    
+    .status, .err {
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+    .status {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .err {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    
+    .action-controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+    
     @media (max-width: 650px) {
       .container {
         border-radius: 0;
         max-width: 100vw;
-        padding: 2vw 0.6vw 10vw 0.6vw;
+        padding: 15px 10px;
       }
-      h2 { font-size: 1.3em; }
+      h2 { font-size: 1.5em; }
       .controls {
         flex-direction: column;
         align-items: flex-start;
         gap: 13px;
       }
-      table {
-        font-size: 0.95em;
-        min-width: 540px;
+      .export-btn {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 10px;
       }
-    }
-    @media (max-width: 430px) {
-      .container { padding: 2vw 0.2vw 8vw 0.2vw; }
-      table { font-size: 0.89em; }
-      th, td { padding: 7px 3px; }
-      .accum-odds { font-size: 1em; }
+      .manual-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .manual-controls input {
+        width: 100%;
+      }
+      .manual-add-btn {
+        width: 100%;
+      }
+      .action-controls {
+        flex-direction: column;
+        gap: 10px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>FootyStats.FORM DIFF 2</h2>
+    <div class="app-header">
+      <h2>⚽ FootyStats</h2>
+      <p>Filter matches</p>
+    </div>
+    <div style="font-family: Arial, sans-serif; margin: 20px;">
+  <h3>KEY COLOURS</h3>
+  <div style="display: flex; gap: 15px; align-items: center;">
+    <div style="display: flex; align-items: center;">
+      <div style="width: 20px; height: 20px; background-color: lightblue; border-radius: 4px; margin-right: 5px;"></div>
+      <span>Safe Matches</span>
+    </div>
+    <div style="display: flex; align-items: center;">
+      <div style="width: 20px; height: 20px; background-color: yellow; border-radius: 4px; margin-right: 5px; border: 1px solid #ccc;"></div>
+      <span>Risky Matches</span>
+    </div>
+  </div>
+</div>
     <div class="status" id="status"></div>
     <div class="err" id="err"></div>
     <div class="progress-bar" id="progressBar"><div class="progress-inner" id="progressInner"></div></div>
+    
     <div class="controls">
       <input type="file" id="htmlInput" accept=".html,.htm">
       <label>
-        Filter by Form Difference (≥):
-        <input type="number" id="formDiffInput" value="0" step="0.01">
+        Form Diff (≥):
+        <input type="number" id="formDiffInput" value="1.5" step="0.1" min="0">
       </label>
       <label>
-        Time Interval (24hr): 
+        Time: 
         <input type="text" id="startTimeInput" placeholder="e.g. 0000">
         to
-        <input type="text" id="endTimeInput" placeholder="e.g. 1100">
+        <input type="text" id="endTimeInput" placeholder="e.g. 2300">
       </label>
-      <button id="filterBtn" disabled>Filter</button>
+      <button id="filterBtn" disabled>Filter Matches</button>
       <button class="export-btn" id="exportBtn" disabled>Export to PNG</button>
     </div>
+    
     <div id="preview-table"></div>
+    
+    <div class="action-controls">
+      <button id="deleteNoOddsBtn" class="delete-btn" disabled>Delete Matches Without Odds</button>
+    </div>
+    
     <div class="manual-section">
-      <h3>Manual Entry of Matches</h3>
+      <h3>📝 Manual Match Entry</h3>
       <div class="manual-controls">
         <input type="text" id="manualTeams" placeholder="Teams (e.g. Team A vs Team B)">
         <input type="text" id="manualTime" placeholder="Time (e.g. 16:00)">
         <input type="number" id="manualOdds" step="0.01" min="1.01" placeholder="Winning Odds">
-        <button class="manual-add-btn" id="manualAddBtn">Add</button>
+        <button class="manual-add-btn" id="manualAddBtn">Add Match</button>
       </div>
       <div id="manual-table"></div>
       <div class="accum-odds"><span>Manual Accumulated Odds:</span> <span id="manual-accumulated-odds">1.00</span></div>
     </div>
+    
     <div id="timestamp"></div>
   </div>
 
@@ -234,8 +385,8 @@
     const htmlInput = document.getElementById('htmlInput');
     const filterBtn = document.getElementById('filterBtn');
     const exportBtn = document.getElementById('exportBtn');
+    const deleteNoOddsBtn = document.getElementById('deleteNoOddsBtn');
     const formDiffInput = document.getElementById('formDiffInput');
-    // TIME INTERVAL FILTER
     const startTimeInput = document.getElementById('startTimeInput');
     const endTimeInput = document.getElementById('endTimeInput');
     const previewTable = document.getElementById('preview-table');
@@ -253,14 +404,30 @@
     const manualTableDiv = document.getElementById('manual-table');
     const manualAccumOddsSpan = document.getElementById('manual-accumulated-odds');
 
-    function showStatus(msg) { statusDiv.textContent = msg; }
-    function showError(msg) { errDiv.textContent = msg; }
-    function clearStatus() { statusDiv.textContent = ""; }
-    function clearError() { errDiv.textContent = ""; }
+    function showStatus(msg) { 
+      statusDiv.textContent = msg;
+      statusDiv.style.display = msg ? 'block' : 'none';
+    }
+    
+    function showError(msg) { 
+      errDiv.textContent = msg;
+      errDiv.style.display = msg ? 'block' : 'none';
+    }
+    
+    function clearStatus() { 
+      statusDiv.textContent = "";
+      statusDiv.style.display = 'none';
+    }
+    
+    function clearError() { 
+      errDiv.textContent = "";
+      errDiv.style.display = 'none';
+    }
+    
     function setProgress(val) {
-      progressBar.classList.add('active');
+      progressBar.style.display = 'block';
       progressInner.style.width = (val * 100) + "%";
-      if (val >= 1 || val === 0) setTimeout(() => progressBar.classList.remove('active'), 400);
+      if (val >= 1 || val === 0) setTimeout(() => progressBar.style.display = 'none', 400);
     }
 
     htmlInput.addEventListener('change', async function(event) {
@@ -273,6 +440,7 @@
       timestampDiv.textContent = '';
       filterBtn.disabled = true;
       exportBtn.disabled = true;
+      deleteNoOddsBtn.disabled = true;
 
       if (file.size > 10 * 1024 * 1024) { // 10MB
         showStatus("Large file detected. Parsing may take a while.");
@@ -323,6 +491,7 @@
         showError("No matches found. Is this a FootyStats HTML?");
         filterBtn.disabled = true;
         exportBtn.disabled = true;
+        deleteNoOddsBtn.disabled = true;
         clearStatus();
         return;
       }
@@ -377,6 +546,7 @@
           showStatus("Matches loaded! Set a filter and click Filter.");
           filterBtn.disabled = false;
           exportBtn.disabled = true;
+          deleteNoOddsBtn.disabled = true;
           previewTable.innerHTML = '<em>Table loaded, enter filter and click Filter.</em>';
           timestampDiv.textContent = '';
           setProgress(1);
@@ -418,8 +588,32 @@
 
     function getOddsClass(odds) {
       if (!odds || isNaN(odds) || odds <= 0) return "";
-      if (odds < 1.5) return "odds-green";
+      if (odds < 1.7) return "odds-green";
       return "odds-yellow";
+    }
+    
+    function formatTimeDisplay(timeStr) {
+      if (!timeStr) return '';
+      
+      // Extract time from date strings
+      if (timeStr.includes(',')) {
+        const dateObj = new Date(timeStr);
+        if (!isNaN(dateObj)) {
+          const hours = dateObj.getHours().toString().padStart(2, '0');
+          const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+          return `<span class="time-display">${hours}:${minutes}</span>`;
+        }
+      }
+      
+      // Handle simple time formats
+      const timeMatch = timeStr.match(/(\d{1,2}:\d{2})/);
+      if (timeMatch) return `<span class="time-display">${timeMatch[0]}</span>`;
+      
+      // Handle 4-digit times
+      const digitMatch = timeStr.match(/(\d{2})(\d{2})/);
+      if (digitMatch) return `<span class="time-display">${digitMatch[1]}:${digitMatch[2]}</span>`;
+      
+      return timeStr; // fallback
     }
 
     filterBtn.addEventListener('click', function () {
@@ -474,41 +668,69 @@
       }
       filtered.sort((a, b) => b.formDiff - a.formDiff);
       renderTable();
-      showStatus(filtered.length ? "Filtered " + filtered.length + " matches." : "No matches found for this filter.");
+      showStatus(filtered.length ? `Filtered ${filtered.length} matches with form diff ≥ ${formDiff}` : "No matches found for this filter.");
     });
+
+    // NEW FUNCTION: Delete matches without valid odds
+    function deleteMatchesWithoutOdds() {
+      const initialCount = filtered.length;
+      
+      // Remove matches with invalid odds
+      filtered = filtered.filter(match => {
+        const odds = parseFloat(match.winningOdds);
+        return !isNaN(odds) && odds > 0;
+      });
+      
+      const removedCount = initialCount - filtered.length;
+      
+      if (removedCount > 0) {
+        renderTable();
+        showStatus(`Removed ${removedCount} matches without valid odds. ${filtered.length} matches remain.`);
+      } else {
+        showStatus("No matches without odds found.");
+      }
+    }
+    
+    // Event listener for new button
+    deleteNoOddsBtn.addEventListener('click', deleteMatchesWithoutOdds);
 
     function renderTable() {
       if (filtered.length === 0) {
         previewTable.innerHTML = '<em>No matches found for filter.</em>';
         exportBtn.disabled = manualEntries.length === 0;
+        deleteNoOddsBtn.disabled = true;
         timestampDiv.textContent = '';
         return;
       }
       let html = `<table id="result-table">
-        <tr>
-          <th>#</th>
-          <th>Teams</th>
-          <th>Time</th>
-          <th>Form Diff</th>
-          <th>Winning Odds</th>
-          <th>Action</th>
-        </tr>`;
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Teams</th>
+            <th>Time</th>
+            <th>Form Diff</th>
+            <th>Winning Odds</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>`;
       filtered.forEach((f, index) => {
         const isValidOdds = !isNaN(f.winningOdds) && f.winningOdds > 0;
         const oddsDisplay = isValidOdds
           ? `<b>${f.winningTeam}</b>: ${f.winningOdds}`
           : `<b>${f.winningTeam}</b>: <input type="number" step="0.01" min="1.01" class="odds-input" data-index="${index}" placeholder="Enter odds">`;
         const oddsClass = isValidOdds ? getOddsClass(f.winningOdds) : "";
+        const diffClass = f.formDiff > 1.3 ? 'high-diff' : f.formDiff > 1.0 ? 'medium-diff' : '';
         html += `<tr data-index="${index}">
           <td>${index + 1}</td>
           <td>${f.teams}</td>
-          <td>${f.time}</td>
-          <td>${f.formDiff.toFixed(2)}</td>
+          <td>${formatTimeDisplay(f.time)}</td>
+          <td class="${diffClass}">${f.formDiff.toFixed(2)}</td>
           <td class="${oddsClass}">${oddsDisplay}</td>
           <td><button class="delete-btn" data-index="${index}">Delete</button></td>
         </tr>`;
       });
-      html += `</table>`;
+      html += `</tbody></table>`;
       const totalOdds = filtered.reduce((acc, f) => {
         const val = parseFloat(f.winningOdds);
         return acc * (isNaN(val) || val <= 0 ? 1 : val);
@@ -516,6 +738,7 @@
       html += `<div class="accum-odds"><span>Accumulated Odds:</span> <span id="accumulated-odds">${totalOdds}</span></div>`;
       previewTable.innerHTML = html;
       exportBtn.disabled = false;
+      deleteNoOddsBtn.disabled = false;
       timestampDiv.textContent = 'Updated: ' + (new Date()).toLocaleString();
       document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', function () {
@@ -551,24 +774,27 @@
     // Manual table logic
     function renderManualTable() {
       let html = `<table id="manual-entry-table">
-        <tr>
-          <th>#</th>
-          <th>Teams</th>
-          <th>Time</th>
-          <th>Winning Odds</th>
-          <th>Action</th>
-        </tr>`;
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Teams</th>
+            <th>Time</th>
+            <th>Winning Odds</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>`;
       manualEntries.forEach((entry, idx) => {
         const oddsClass = getOddsClass(entry.odds);
         html += `<tr>
           <td>${idx + 1}</td>
           <td contenteditable="true" data-edit="teams" data-idx="${idx}">${entry.teams}</td>
-          <td contenteditable="true" data-edit="time" data-idx="${idx}">${entry.time}</td>
+          <td contenteditable="true" data-edit="time" data-idx="${idx}">${formatTimeDisplay(entry.time)}</td>
           <td contenteditable="true" data-edit="odds" data-idx="${idx}" class="${oddsClass}">${entry.odds}</td>
           <td><button class="delete-btn" data-manual-idx="${idx}">Delete</button></td>
         </tr>`;
       });
-      html += `</table>`;
+      html += `</tbody></table>`;
       manualTableDiv.innerHTML = html;
 
       // Update odds
@@ -610,13 +836,14 @@
       const time = manualTime.value.trim();
       const odds = parseFloat(manualOdds.value.trim());
       if (!teams || !time || isNaN(odds) || odds <= 0) {
-        alert('Please enter valid teams, time and odds.');
+        showError('Please enter valid teams, time and odds.');
         return;
       }
       manualEntries.push({ teams, time, odds });
       manualTeams.value = '';
       manualTime.value = '';
       manualOdds.value = '';
+      clearError();
       renderManualTable();
       renderTable(); // So export button status updates
     });
@@ -629,8 +856,8 @@
       // Build a container for export
       let wrap = document.createElement('div');
       wrap.style.background = "#fff";
-      wrap.style.padding = "18px";
-      wrap.style.borderRadius = "10px";
+      wrap.style.padding = "25px";
+      wrap.style.borderRadius = "12px";
       wrap.style.position = "fixed";
       wrap.style.top = "-9999px";
       wrap.style.left = "-9999px";
@@ -638,13 +865,22 @@
       wrap.style.width = "max-content";
       wrap.style.maxWidth = "none";
       wrap.style.boxSizing = "border-box";
+      wrap.style.boxShadow = "0 4px 20px rgba(0,0,0,0.12)";
+      
+      // Title for export
+      let title = document.createElement('h2');
+      title.textContent = "FootyStats Match Filter Results";
+      title.style.textAlign = "center";
+      title.style.margin = "0 0 20px 0";
+      title.style.color = "#1e40af";
+      wrap.appendChild(title);
 
       // Filtered table
       let filteredTable = document.getElementById('result-table');
       if (filteredTable) {
         let tableClone = filteredTable.cloneNode(true);
         tableClone.style.width = "auto";
-        tableClone.style.minWidth = "660px";
+        tableClone.style.minWidth = "700px";
         tableClone.style.background = "#fff";
         wrap.appendChild(tableClone);
 
@@ -658,13 +894,14 @@
       if (manualTable && manualEntries.length > 0) {
         let manualTitle = document.createElement('h3');
         manualTitle.textContent = "Manual Matches";
-        manualTitle.style.marginTop = "22px";
-        manualTitle.style.marginBottom = "7px";
+        manualTitle.style.marginTop = "30px";
+        manualTitle.style.marginBottom = "15px";
+        manualTitle.style.color = "#2563eb";
         wrap.appendChild(manualTitle);
 
         let manualClone = manualTable.cloneNode(true);
         manualClone.style.width = "auto";
-        manualClone.style.minWidth = "660px";
+        manualClone.style.minWidth = "700px";
         manualClone.style.background = "#fff";
         wrap.appendChild(manualClone);
 
@@ -675,19 +912,20 @@
 
       let tsText = timestampDiv.textContent;
       let ts = document.createElement('div');
-      ts.style.marginTop = "10px";
-      ts.style.fontSize = "13px";
-      ts.style.color = "#666";
+      ts.style.marginTop = "20px";
+      ts.style.fontSize = "14px";
+      ts.style.color = "#64748b";
+      ts.style.textAlign = "right";
       ts.textContent = tsText;
       wrap.appendChild(ts);
 
       document.body.appendChild(wrap);
-      html2canvas(wrap, {backgroundColor: "#fff", scale: 2}).then(canvas => {
+      html2canvas(wrap, {backgroundColor: "#fff", scale: 2, logging: false}).then(canvas => {
         let link = document.createElement('a');
-        link.download = 'filtered_and_manual_matches.png';
+        link.download = 'footystats_matches_' + new Date().toISOString().slice(0,16).replace('T','_') + '.png';
         link.href = canvas.toDataURL();
         link.click();
-        document.body.removeChild(wrap);
+        setTimeout(() => document.body.removeChild(wrap), 500);
       });
     });
   </script>
