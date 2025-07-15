@@ -2,48 +2,254 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Basketball Match Filter</title>
-  <link rel="stylesheet" href="stylez.css">
+  <title>ZuluBet Filter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      font-size: 28px;
+    }
+
+    input[type="file"], button {
+      padding: 10px 15px;
+      margin: 10px 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    #exportBtn {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      text-align: center;
+    }
+
+    th {
+      background-color: #34495e;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f4f6f8;
+    }
+
+    .highlight {
+      background-color: #d4edda;
+      font-weight: bold;
+    }
+
+    .deleteBtn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .oddsInput {
+      width: 80px;
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      text-align: right;
+    }
+
+    #totalOddsDisplay {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    @media screen and (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        background-color: #34495e;
+      }
+
+      td {
+        padding-left: 50%;
+        text-align: left;
+        border: none;
+        position: relative;
+      }
+
+      td::before {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        font-weight: bold;
+      }
+
+      td:nth-of-type(1)::before { content: "Date"; }
+      td:nth-of-type(2)::before { content: "Time"; }
+      td:nth-of-type(3)::before { content: "Best Pick"; }
+      td:nth-of-type(4)::before { content: "Odds"; }
+      td:nth-of-type(5)::before { content: "Action"; }
+    }
+  </style>
 </head>
 <body>
-  <h1>FOREBET.VALUE DIFF=15,PROB DIFF=50</h1>
-  <div id="upload">
-    <input type="file" id="fileInput" accept=".html,.htm">
-    <p>Upload your basket.html file here.</p>
+
+  <h2>ZuluBet</h2>
+  <input type="file" id="fileInput" accept=".html,.htm">
+  <button id="exportBtn">Export PNG</button>
+
+  <div id="tableContainer">
+    <table id="resultsTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Best Pick</th>
+          <th>Odds</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div id="totalOddsDisplay">Accumulated Odds: 1.00</div>
   </div>
-  <div id="filters" style="display:none;">
-    <label>
-      Team:
-      <input type="text" id="teamFilter" placeholder="Enter team name">
-    </label>
-    <label>
-      Min Probability Difference:
-      <input type="number" id="probDiffFilter" step="1">
-    </label>
-    <label>
-      Min Value Difference:
-      <input type="number" id="valDiffFilter" step="1">
-    </label>
-    <button id="applyFilter">Apply Filter</button>
-    <button id="clearFilter">Clear</button>
-  </div>
-  <table id="matchesTable" style="display:none;">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Teams</th>
-        <th>Pred</th>
-        <th>Probability Diff</th>
-        <th>Value Diff</th>
-        <th>Odds</th>
-        <th>Score</th>
-        <th>Delete</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Matches go here -->
-    </tbody>
-  </table>
-  <script src="script.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+  <script>
+    let firstMatchDate = '';
+
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(e.target.result, "text/html");
+        const allRows = [...doc.querySelectorAll('tr')];
+        const matches = [];
+
+        allRows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          if (cells.length >= 7) {
+            const date = cells[0].textContent.trim();
+            const time = cells[1].textContent.trim();
+            const p1 = extractPercent(cells[3].textContent);
+            const px = extractPercent(cells[4].textContent);
+            const p2 = extractPercent(cells[5].textContent);
+            let max = Math.max(p1, px, p2);
+            let bestPick = max >= 68 ? (p1 === max ? '1' : px === max ? 'X' : '2') : null;
+
+            if (bestPick) {
+              matches.push({ date, time, bestPick, max });
+            }
+          }
+        });
+
+        matches.sort((a, b) => b.max - a.max);
+        firstMatchDate = matches[0]?.date || '';
+
+        const tableBody = document.querySelector("#resultsTable tbody");
+        tableBody.innerHTML = "";
+
+        matches.forEach(m => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${m.date}</td>
+            <td>${m.time}</td>
+            <td class="highlight">${m.bestPick} (${m.max}%)</td>
+            <td><input type="number" step="0.01" min="1" class="oddsInput" oninput="updateAccumulatedOdds()"></td>
+            <td><button class="deleteBtn" onclick="deleteRow(this)">Delete</button></td>
+          `;
+          tableBody.appendChild(tr);
+        });
+
+        document.getElementById("resultsTable").style.display = "table";
+        updateAccumulatedOdds();
+      };
+      reader.readAsText(file);
+    });
+
+    function extractPercent(text) {
+      const match = text.match(/(\d+)%/);
+      return match ? parseInt(match[1]) : 0;
+    }
+
+    function deleteRow(button) {
+      button.closest('tr').remove();
+      updateAccumulatedOdds();
+    }
+
+    function updateAccumulatedOdds() {
+      const inputs = document.querySelectorAll(".oddsInput");
+      let product = 1;
+      inputs.forEach(input => {
+        const val = parseFloat(input.value);
+        if (!isNaN(val) && val > 0) product *= val;
+      });
+      document.getElementById("totalOddsDisplay").textContent = `Accumulated Odds: ${product.toFixed(2)}`;
+    }
+
+    document.getElementById("exportBtn").addEventListener("click", function() {
+      const tableContainer = document.getElementById("tableContainer");
+      const totalOddsText = document.getElementById("totalOddsDisplay").textContent;
+
+      const header = document.createElement("div");
+      header.style.textAlign = "center";
+      header.style.fontWeight = "bold";
+      header.style.fontSize = "20px";
+      header.style.marginBottom = "10px";
+      header.textContent = `🎟️ Ticket - ${firstMatchDate || 'Date'}`;
+
+      const footer = document.createElement("div");
+      footer.style.textAlign = "center";
+      footer.style.marginTop = "10px";
+      footer.style.fontSize = "18px";
+      footer.textContent = totalOddsText;
+
+      tableContainer.insertBefore(header, tableContainer.firstChild);
+      tableContainer.appendChild(footer);
+
+      domtoimage.toBlob(tableContainer).then(function(blob) {
+        const a = document.createElement("a");
+        const timestamp = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').replace(/:/g, '-');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Ticket_${firstMatchDate || 'ZuluBet'}_${timestamp}.png`;
+        a.click();
+
+        // Clean up
+        header.remove();
+        footer.remove();
+      });
+    });
+  </script>
 </body>
 </html>
