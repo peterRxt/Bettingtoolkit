@@ -4,112 +4,369 @@
   <meta charset="UTF-8" />
   <title>FOOTYSTATS FILTERED</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 1rem;
+    :root {
+      --primary: #2563eb; /* More vibrant blue */
+      --primary-dark: #1d4ed8;
+      --success: #059669; /* Better contrast green */
+      --warning: #d97706; /* More visible yellow */
+      --danger: #dc2626; /* Stronger red */
+      --dark: #111827; /* Darker text for better contrast */
+      --light: #f9fafb;
+      --gray: #4b5563;
+      --gray-light: #e5e7eb;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
     }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f3f4f6; /* Simpler light gray */
+      color: var(--dark);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+    
     .container {
       background: white;
-      padding: 1rem;
-      border-radius: 8px;
-      max-width: 960px;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      max-width: 1200px;
+      margin: 0 auto;
+      box-shadow: var(--box-shadow);
     }
+    
     h2 {
       text-align: center;
-      color: #007bff;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: -0.5px;
     }
+    
     .controls {
       display: flex;
-      justify-content: center;
-      margin-bottom: 1rem;
-      gap: 1rem;
       flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      align-items: center;
     }
-    input[type="file"] {
-      padding: 0.5rem;
+    
+    .file-input-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
     }
-    button {
-      background: #28a745;
-      color: white;
-      padding: 0.6rem 1rem;
-      border: none;
-      border-radius: 5px;
+    
+    .file-input-label {
+      display: block;
+      padding: 0.75rem 1.25rem;
+      background: white;
+      border: 2px dashed var(--gray-light);
+      border-radius: var(--border-radius);
+      text-align: center;
       cursor: pointer;
+      transition: var(--transition);
     }
-    button:hover {
-      background: #1e7e34;
+    
+    .file-input-label:hover {
+      border-color: var(--primary);
+      background-color: rgba(37, 99, 235, 0.05);
     }
+    
+    .file-input-label span {
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--gray);
+    }
+    
+    input[type="file"] {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    .btn-warning {
+      background-color: var(--warning);
+      color: white; /* Changed to white text for better contrast */
+    }
+    
+    .btn-warning:hover {
+      background-color: #b45309;
+      transform: translateY(-2px);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: #b91c1c;
+      transform: translateY(-2px);
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    .result-wrap {
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: 0 0 0 1px var(--gray-light);
+      background: white;
+    }
+    
     table {
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 800px;
     }
+    
     th, td {
-      border: 1px solid #ccc;
-      padding: 0.6rem;
+      padding: 1rem;
       text-align: center;
+      border-bottom: 1px solid var(--gray-light);
     }
+    
     th {
-      background: #f0f0f0;
-    }
-    .highlight-row {
-      background-color: #d4edda !important; /* light green for safe odds diff */
-    }
-    .highlight-form {
-      background-color: #fff3cd !important; /* highlight form diff column */
-      font-weight: bold;
-    }
-    .total-odds {
-      margin-top: 1rem;
-      font-weight: bold;
-      text-align: right;
-    }
-    .delete-btn {
-      background: #dc3545;
+      background-color: var(--primary);
       color: white;
-      padding: 0.3rem 0.6rem;
-      border: none;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    
+    tr:nth-child(even) {
+      background-color: rgba(249, 250, 251, 0.8);
+    }
+    
+    tr:hover {
+      background-color: rgba(37, 99, 235, 0.08);
+    }
+    
+    .highlight-row {
+      background-color: rgba(5, 150, 105, 0.15) !important;
+    }
+    
+    .highlight-form {
+      background-color: rgba(217, 119, 6, 0.15);
+      font-weight: bold;
+    }
+    
+    .total-odds {
+      margin-top: 1.5rem;
+      font-weight: 700;
+      text-align: right;
+      font-size: 1.1rem;
+      color: var(--primary);
+      padding: 0.75rem 1rem;
+      background-color: rgba(37, 99, 235, 0.1);
+      border-radius: var(--border-radius);
+      display: inline-block;
+      float: right;
+    }
+    
+    .delete-btn {
+      background-color: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 0.4rem 0.8rem;
       border-radius: 4px;
+      font-size: 0.8rem;
       cursor: pointer;
+      transition: var(--transition);
     }
+    
     .delete-btn:hover {
-      background: #a71d2a;
+      background-color: var(--danger);
+      color: white;
     }
+    
     .export-header, .export-footer {
       text-align: center;
-      margin: 10px 0;
-      font-weight: bold;
+      margin: 1rem 0;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .home-wins-banner {
+      background-color: rgba(37, 99, 235, 0.1);
+      padding: 1rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--primary);
+      margin: 1rem 0;
+      border-radius: var(--border-radius);
+      border-left: 4px solid var(--primary);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--gray);
+    }
+    
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    
+    /* Better contrast for text */
+    td {
+      color: var(--dark);
+      font-weight: 500;
+    }
+    
+    /* Stronger highlights */
+    .highlight-row td {
+      font-weight: 600;
+    }
+    
+    .highlight-form {
+      color: #92400e; /* Darker orange text */
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .file-input-wrapper {
+        min-width: 100%;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+      
+      .total-odds {
+        float: none;
+        width: 100%;
+        text-align: center;
+      }
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 </head>
 <body>
   <div class="container">
-    <h2>FOOTYSTATS - Filtered Matches</h2>
+    <h2>FOOTYSTATS MATCH FILTER</h2>
     <div class="controls">
-      <input type="file" id="htmlInput" accept=".html,.htm" />
-      <button id="filterBtn" disabled>Filter Matches</button>
-      <button id="exportBtn" disabled>Export PNG</button>
+      <div class="file-input-wrapper">
+        <label for="htmlInput" class="file-input-label">
+          <i data-feather="upload"></i> Choose HTML File
+          <span>Select FootyStats export file</span>
+        </label>
+        <input type="file" id="htmlInput" accept=".html,.htm" />
+      </div>
+      <button id="filterBtn" class="btn btn-primary" disabled>
+        <i data-feather="filter"></i> Filter Matches
+      </button>
+      <button id="safestBtn" class="btn btn-warning" disabled>
+        <i data-feather="shield"></i> Safest Matches
+      </button>
+      <button id="exportBtn" class="btn btn-primary" disabled>
+        <i data-feather="download"></i> Export PNG
+      </button>
     </div>
-    <div id="result-wrap"></div>
+    <div id="result-wrap" class="result-wrap">
+      <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p>Upload a FootyStats HTML file to get started</p>
+      </div>
+    </div>
     <div class="total-odds" id="totalOdds"></div>
+    <div style="clear: both;"></div>
   </div>
 
   <script>
+    feather.replace();
+    
     const htmlInput = document.getElementById('htmlInput');
     const filterBtn = document.getElementById('filterBtn');
     const exportBtn = document.getElementById('exportBtn');
+    const safestBtn = document.getElementById('safestBtn');
     const resultWrap = document.getElementById('result-wrap');
     const totalOddsDiv = document.getElementById('totalOdds');
-    let matches = [], filtered = [];
+    let matches = [], filtered = [], fileName = "";
 
     htmlInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      
+      // Update UI during processing
+      filterBtn.disabled = true;
+      filterBtn.innerHTML = '<i data-feather="loader" class="spin"></i> Processing...';
+      feather.replace();
+      
+      fileName = file.name.replace(/\.[^/.]+$/, "");
       const text = await file.text();
       const doc = new DOMParser().parseFromString(text, 'text/html');
       const nodes = doc.querySelectorAll('a.match.row');
@@ -137,85 +394,189 @@
           });
         }
       });
+      
+      // Reset button state
       filterBtn.disabled = false;
+      filterBtn.innerHTML = '<i data-feather="filter"></i> Filter Matches';
+      feather.replace();
+      
+      // Show file loaded feedback
+      resultWrap.innerHTML = `
+        <div class="empty-state fade-in">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <p><strong>${matches.length} matches</strong> loaded from ${fileName}</p>
+          <p>Click "Filter Matches" to analyze</p>
+        </div>
+      `;
     });
 
     filterBtn.addEventListener('click', () => {
-      filtered = matches.filter(m => m.homeOdds < m.awayOdds && m.homeForm > m.awayForm)
-        .sort((a, b) => b.formDiff - a.formDiff);
-      renderTable();
-      exportBtn.disabled = filtered.length === 0;
+      filterBtn.innerHTML = '<i data-feather="loader" class="spin"></i> Filtering...';
+      feather.replace();
+      
+      setTimeout(() => {
+        filtered = matches.filter(m => m.homeOdds < m.awayOdds && m.homeForm > m.awayForm)
+          .sort((a, b) => b.formDiff - a.formDiff);
+        renderTable();
+        exportBtn.disabled = filtered.length === 0;
+        safestBtn.disabled = filtered.length === 0;
+        
+        filterBtn.innerHTML = '<i data-feather="filter"></i> Filter Matches';
+        feather.replace();
+      }, 300);
+    });
+
+    safestBtn.addEventListener('click', () => {
+      safestBtn.innerHTML = '<i data-feather="loader" class="spin"></i> Filtering...';
+      feather.replace();
+      
+      setTimeout(() => {
+        filtered = filtered.filter(m => m.oddsDiff >= 2.5 && m.formDiff >= 1.1);
+        renderTable();
+        safestBtn.innerHTML = '<i data-feather="shield"></i> Safest Matches';
+        feather.replace();
+      }, 300);
     });
 
     function renderTable() {
       if (!filtered.length) {
-        resultWrap.innerHTML = "<em>No matches found.</em>";
+        resultWrap.innerHTML = `
+          <div class="empty-state fade-in">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p>No matches found with current filters</p>
+            <p>Try adjusting your criteria</p>
+          </div>
+        `;
         totalOddsDiv.textContent = '';
         return;
       }
 
       const rows = filtered.map((m, i) => {
         const rowClass = m.oddsDiff >= 2.5 ? "highlight-row" : "";
-        return `<tr class="${rowClass}">
+        return `<tr class="${rowClass} fade-in">
           <td>${i + 1}</td>
-          <td>${m.time}</td>
-          <td>${m.home} vs ${m.away}</td>
-          <td>${m.homeForm}</td>
-          <td>${m.awayForm}</td>
+          <td><strong>${m.time}</strong></td>
+          <td><strong style="color: var(--primary);">${m.home}</strong> vs ${m.away}</td>
+          <td>${m.homeForm.toFixed(1)}</td>
+          <td>${m.awayForm.toFixed(1)}</td>
           <td class="highlight-form">${m.formDiff.toFixed(2)}</td>
-          <td>${m.homeOdds}</td>
-          <td>${m.awayOdds}</td>
+          <td><strong>${m.homeOdds.toFixed(2)}</strong></td>
+          <td>${m.awayOdds.toFixed(2)}</td>
           <td>${m.oddsDiff.toFixed(2)}</td>
-          <td><button class="delete-btn" onclick="deleteMatch(${i})">Delete</button></td>
+          <td><button class="delete-btn" onclick="deleteMatch(${i})"><i data-feather="trash-2" width="14"></i></button></td>
         </tr>`;
       }).join('');
 
       resultWrap.innerHTML = `
-        <table>
+        <table id="mainTable">
           <thead>
             <tr>
-              <th>#</th><th>Time</th><th>Teams</th><th>Home Form</th><th>Away Form</th>
-              <th>Form Diff</th><th>Home Odds</th><th>Away Odds</th><th>Odds Diff</th><th>Delete</th>
+              <th>#</th>
+              <th>Time</th>
+              <th>Teams</th>
+              <th>Home Form</th>
+              <th>Away Form</th>
+              <th>Form Diff</th>
+              <th>Home Odds</th>
+              <th>Away Odds</th>
+              <th>Odds Diff</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
       `;
+      
+      feather.replace();
 
       const total = filtered.reduce((acc, m) => acc * m.homeOdds, 1).toFixed(2);
-      totalOddsDiv.textContent = `Accumulated Home Odds: ${total}`;
+      totalOddsDiv.textContent = `Accumulated Home Win Odds: ${total}x`;
+      totalOddsDiv.style.display = filtered.length ? 'block' : 'none';
     }
 
     window.deleteMatch = function(index) {
       filtered.splice(index, 1);
       renderTable();
+      
+      if (filtered.length === 0) {
+        exportBtn.disabled = true;
+        safestBtn.disabled = true;
+      }
     };
 
     exportBtn.addEventListener('click', () => {
-      const wrap = document.createElement('div');
+      exportBtn.innerHTML = '<i data-feather="loader" class="spin"></i> Exporting...';
+      feather.replace();
+      
+      const now = new Date();
+      const monthName = now.toLocaleString('default', { month: 'long' });
+      const year = now.getFullYear();
+      const timestamp = now.toLocaleString();
+      const headerTitle = `${fileName} - ${monthName} ${year}`;
 
-      const times = filtered.map(m => m.time).filter(t => t !== 'N/A');
-      const dateHeader = times.length ? `Date(s): ${[...new Set(times)].join(', ')}` : '';
-      const timestamp = new Date().toLocaleString();
+      const clone = document.createElement('div');
+      const table = document.querySelector("#mainTable").cloneNode(true);
 
-      wrap.innerHTML = `
-        <div class="export-header"><h3>HOME WINS</h3><p>${dateHeader}</p></div>
-        ${resultWrap.innerHTML}
-        <div class="total-odds">${totalOddsDiv.textContent}</div>
+      // Remove delete column (last column)
+      table.querySelectorAll("tr").forEach(row => {
+        row.removeChild(row.lastElementChild);
+      });
+
+      clone.innerHTML = `
+        <div class="export-header"><h3 style="color: var(--primary);">${headerTitle}</h3></div>
+        <div class="home-wins-banner">HOME WIN PREDICTIONS</div>
+      `;
+      clone.appendChild(table);
+      clone.innerHTML += `
+        <div class="total-odds" style="margin: 1rem auto; float: none; text-align: center; display: block;">${totalOddsDiv.textContent}</div>
         <div class="export-footer">Generated on ${timestamp}</div>
       `;
-      wrap.style.background = 'white';
-      wrap.style.padding = '1rem';
-      document.body.appendChild(wrap);
 
-      html2canvas(wrap).then(canvas => {
+      clone.style.background = 'white';
+      clone.style.padding = '2rem';
+      clone.style.maxWidth = '800px';
+      clone.style.margin = '0 auto';
+      document.body.appendChild(clone);
+
+      html2canvas(clone, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      }).then(canvas => {
         const a = document.createElement('a');
-        a.href = canvas.toDataURL();
-        a.download = `home_wins_filtered_${Date.now()}.png`;
+        a.href = canvas.toDataURL('image/png', 1.0);
+        a.download = `${fileName}_filtered_${Date.now()}.png`;
         a.click();
-        document.body.removeChild(wrap);
+        document.body.removeChild(clone);
+        
+        exportBtn.innerHTML = '<i data-feather="download"></i> Export PNG';
+        feather.replace();
       });
     });
+    
+    // Add spinning animation for loader icons
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .spin {
+        animation: spin 1s linear infinite;
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 </html>
