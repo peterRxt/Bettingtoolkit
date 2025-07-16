@@ -2,288 +2,1009 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>FootyStats</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> FootyStats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary: #007bff;
-      --accent: #f8f9fa;
-      --danger: #dc3545;
-      --success: #28a745;
-      --border-radius: 10px;
-      --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --secondary: #10b981;
+      --danger: #ef4444;
+      --light: #f8fafc;
+      --dark: #1e293b;
+      --gray: #64748b;
+      --light-gray: #e2e8f0;
+      --card-bg: #ffffff;
+      --filter-a: #fef08a;
+      --filter-b: #bfdbfe;
+      --success: #22c55e;
     }
-    body {
+    
+    * {
+      box-sizing: border-box;
       margin: 0;
-      font-family: var(--font);
-      background: #f4f7fa;
-      color: #333;
-      padding: 1rem;
+      padding: 0;
     }
-
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f1f5f9;
+      color: var(--dark);
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+    }
+    
     .container {
-      max-width: 960px;
-      margin: auto;
-      background: white;
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
     }
-
-    h2 {
-      text-align: center;
-      color: var(--primary);
-      margin-bottom: 1.5rem;
-    }
-
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .controls input[type="file"] {
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: var(--border-radius);
-      min-width: 160px;
-    }
-
-    button {
+    
+    header {
       background: var(--primary);
       color: white;
-      border: none;
-      padding: 0.6rem 1rem;
-      font-size: 1rem;
-      border-radius: var(--border-radius);
+      padding: 20px 0;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .logo i {
+      font-size: 1.8rem;
+    }
+    
+    .file-upload {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 15px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: 0.3s ease;
+      transition: all 0.3s ease;
     }
-
-    button:hover {
-      background: #0056b3;
+    
+    .file-upload:hover {
+      background: rgba(255, 255, 255, 0.3);
     }
-
-    .export-btn {
-      background: var(--success);
+    
+    .file-upload input {
+      display: none;
     }
-
-    .export-btn:hover {
-      background: #1e7e34;
+    
+    .file-upload-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      cursor: pointer;
     }
-
-    .delete-btn {
+    
+    .file-name {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+    
+    .controls-wrapper {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .control-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--light-gray);
+    }
+    
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .card-header h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+    
+    .card-header i {
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--gray);
+    }
+    
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--light-gray);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border 0.3s ease;
+    }
+    
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      font-size: 0.95rem;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+    
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #0d9f6e;
+    }
+    
+    .btn-danger {
       background: var(--danger);
+      color: white;
     }
-
-    .delete-btn:hover {
-      background: #a71d2a;
+    
+    .btn-danger:hover {
+      background: #dc2626;
     }
-
+    
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .results-section {
+      margin-top: 30px;
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .section-header h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .section-header i {
+      color: var(--primary);
+    }
+    
+    .accumulated {
+      background: var(--light);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-weight: 600;
+      color: var(--success);
+      margin-top: 15px;
+      display: inline-block;
+      border: 1px solid var(--light-gray);
+    }
+    
+    .table-container {
+      overflow-x: auto;
+      margin-top: 15px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      background: var(--card-bg);
+    }
+    
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 1rem;
-      font-size: 0.95rem;
+      min-width: 600px;
     }
-
-    table th, table td {
-      padding: 0.75rem;
+    
+    th {
+      background: var(--primary);
+      color: white;
+      font-weight: 500;
+      text-align: left;
+      padding: 12px 15px;
+    }
+    
+    td {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--light-gray);
+      vertical-align: middle;
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    tr:hover {
+      background: rgba(59, 130, 246, 0.05);
+    }
+    
+    .highlight-home {
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+    
+    .filter-a-row {
+      background-color: var(--filter-a);
+    }
+    
+    .filter-b-row {
+      background-color: var(--filter-b);
+    }
+    
+    .action-btns {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .export-section {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .no-results {
+      padding: 30px;
       text-align: center;
-      border: 1px solid #ddd;
-    }
-
-    table th:nth-child(8),
-    table td:nth-child(8) {
-      background-color: #d0ebff; /* sky blue for home form */
-    }
-
-    table th {
-      background-color: var(--accent);
-      font-weight: bold;
-    }
-
-    tr:nth-child(even) {
-      background: #f9f9f9;
-    }
-
-    #total-odds {
-      text-align: right;
-      margin-top: 1rem;
-      font-weight: bold;
+      color: var(--gray);
       font-size: 1rem;
-      color: #007bff;
     }
-
-    @media (max-width: 600px) {
-      .controls {
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--light-gray);
+      color: var(--dark);
+    }
+    
+    .badge-primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .badge-success {
+      background: var(--success);
+      color: white;
+    }
+    
+    @media (max-width: 768px) {
+      .header-content {
         flex-direction: column;
-        align-items: stretch;
+        align-items: flex-start;
       }
-
-      table {
-        font-size: 0.85rem;
+      
+      .file-upload {
+        width: 100%;
+        justify-content: space-between;
       }
-
-      table th, table td {
-        padding: 0.5rem;
+      
+      .file-name {
+        max-width: 180px;
       }
-
-      button {
+      
+      .controls-wrapper {
+        grid-template-columns: 1fr;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+      }
+      
+      .btn {
         width: 100%;
       }
-
-      #total-odds {
-        text-align: center;
+      
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+      
+      .header-content {
+        padding: 0 15px;
+      }
+      
+      .control-card {
+        padding: 15px;
+      }
+      
+      th, td {
+        padding: 10px 12px;
+      }
+      
+      .action-btns {
+        flex-direction: column;
+        gap: 5px;
       }
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h2>FOOTYSTATS</h2>
-    <h2>FILTER: HOME FORM &gt; 1.9 & HOME ODDS &lt;AWAY ODDS</h2>
-    <div class="controls">
-      <input type="file" id="htmlInput" accept=".html,.htm">
-      <button id="filterBtn" disabled>Filter</button>
-      <button class="export-btn" id="exportBtn" disabled>Export PNG</button>
+  <header>
+    <div class="header-content">
+      <div class="logo">
+        <i class="fas fa-futbol"></i>
+        <span>FootyStats</span>
+      </div>
+      <div class="file-upload">
+        <label class="file-upload-label" for="fileInput">
+          <i class="fas fa-file-upload"></i>
+          <span>Upload File</span>
+        </label>
+        <span class="file-name" id="fileName">No file selected</span>
+        <input type="file" id="fileInput" accept=".html,.htm">
+      </div>
     </div>
-    <div id="result-wrap"></div>
-    <div id="total-odds"></div>
+  </header>
+
+  <div class="container">
+    <div class="controls-wrapper">
+      <div class="control-card">
+        <div class="card-header">
+          <i class="fas fa-filter"></i>
+          <h3>HOME WINS</h3>
+          <span class="badge badge-primary">Home Win Form</span>
+        </div>
+        <div class="form-group">
+          <p style="font-size: 0.9rem; color: var(--gray); margin-bottom: 15px;">
+            DELETE MATCHES WITH FORM DIFF LESS 1.1
+          </p>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="filterA()">
+            <i class="fas fa-play"></i> Apply Filter A
+          </button>
+          <button class="btn btn-secondary" onclick="filterSafest()">
+            <i class="fas fa-shield-alt"></i> CLICK FOR SAFEST MATCHES
+          </button>
+        </div>
+      </div>
+
+      <div class="control-card">
+        <div class="card-header">
+          <i class="fas fa-filter"></i>
+          <h3>Filter B</h3>
+          <span class="badge badge-success">Form & Time</span>
+        </div>
+        <div class="form-group">
+          <label for="formDiff">Minimum Form Difference</label>
+          <input type="number" id="formDiff" value="1.5" step="0.1" min="0">
+        </div>
+        <div class="form-group">
+          <label for="startTime">Start Time</label>
+          <input type="text" id="startTime" placeholder="Optional">
+        </div>
+        <div class="form-group">
+          <label for="endTime">End Time</label>
+          <input type="text" id="endTime" placeholder="Optional">
+        </div>
+        <button class="btn btn-primary" onclick="filterB()">
+          <i class="fas fa-play"></i> Apply Filter B
+        </button>
+      </div>
+    </div>
+
+    <div class="results-section">
+      <div class="section-header">
+        <h3><i class="fas fa-list-alt"></i> Filter A Results</h3>
+        <div>
+          <button class="btn btn-primary" onclick="exportPNG('A')">
+            <i class="fas fa-download"></i> Export PNG
+          </button>
+        </div>
+      </div>
+      <div id="filterAResults" class="table-container">
+        <div class="no-results">
+          <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+          <p>No matches found. Upload a file and apply Filter A to see results.</p>
+        </div>
+      </div>
+      <div class="accumulated" id="accumA"></div>
+    </div>
+
+    <div class="results-section">
+      <div class="section-header">
+        <h3><i class="fas fa-list-alt"></i> Filter B Results</h3>
+        <div>
+          <button class="btn btn-primary" onclick="exportPNG('B')">
+            <i class="fas fa-download"></i> Export PNG
+          </button>
+        </div>
+      </div>
+      <div id="filterBResults" class="table-container">
+        <div class="no-results">
+          <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+          <p>No matches found. Upload a file and apply Filter B to see results.</p>
+        </div>
+      </div>
+      <div class="accumulated" id="accumB"></div>
+    </div>
+
+    <div class="export-section">
+      <button class="btn btn-primary" onclick="exportCombinedPNG()">
+        <i class="fas fa-file-export"></i> Export Combined Results
+      </button>
+    </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1"></script>
   <script>
-    const htmlInput = document.getElementById('htmlInput');
-    const filterBtn = document.getElementById('filterBtn');
-    const exportBtn = document.getElementById('exportBtn');
-    const resultWrap = document.getElementById('result-wrap');
-    const totalOddsDiv = document.getElementById('total-odds');
+    let matches = [], filteredA = [], filteredB = [], uploadedFileName = '';
 
-    let matches = [], filtered = [];
-
-    htmlInput.addEventListener('change', async (e) => {
+    document.getElementById('fileInput').addEventListener('change', async function (e) {
       const file = e.target.files[0];
       if (!file) return;
-      const text = await file.text();
-      const doc = new DOMParser().parseFromString(text, 'text/html');
-      const nodes = doc.querySelectorAll('a.match.row');
-      matches = [];
-      nodes.forEach(match => {
-        const time = match.querySelector('.date')?.textContent.trim();
-        const home = match.querySelector('.team.home span')?.textContent.trim();
-        const away = match.querySelector('.team.away span')?.textContent.trim();
-        const homeForm = parseFloat(match.querySelector('.team.home .form-box')?.textContent.trim() || 0);
-        const awayForm = parseFloat(match.querySelector('.team.away .form-box')?.textContent.trim() || 0);
-        const odds = match.querySelectorAll('.stat.odds');
-        const nums = Array.from(odds).map(o => o.textContent.match(/\d+(\.\d+)?/g)).flat().filter(Boolean);
-        if (nums.length >= 3) {
-          matches.push({
-            time,
-            home,
-            away,
-            homeForm,
-            awayForm,
-            homeOdds: parseFloat(nums[0]),
-            awayOdds: parseFloat(nums[2])
-          });
+      uploadedFileName = file.name;
+      document.getElementById('fileName').textContent = file.name;
+      
+      try {
+        const html = await file.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        matches = [];
+
+        doc.querySelectorAll('a.match.row').forEach(match => {
+          const home = match.querySelector('.team.home span')?.textContent.trim();
+          const away = match.querySelector('.team.away span')?.textContent.trim();
+          const homeForm = parseFloat(match.querySelector('.team.home .form-box')?.textContent.trim() || '0');
+          const awayForm = parseFloat(match.querySelector('.team.away .form-box')?.textContent.trim() || '0');
+          const time = match.querySelector('.time')?.textContent.trim() || 'N/A';
+          const odds = match.querySelectorAll('.stat.odds');
+          const nums = Array.from(odds).map(o => o.textContent.match(/\d+(\.\d+)?/g)).flat().filter(Boolean);
+          
+          if (nums.length >= 3) {
+            matches.push({
+              id: home + away + time,
+              home, away, time, homeForm, awayForm,
+              formDiff: Math.abs(homeForm - awayForm),
+              homeOdds: parseFloat(nums[0]),
+              drawOdds: parseFloat(nums[1]),
+              awayOdds: parseFloat(nums[2]),
+              oddsDiff: Math.abs(parseFloat(nums[0]) - parseFloat(nums[2]))
+            });
+          }
+        });
+        
+        showToast(`${matches.length} matches loaded successfully!`, 'success');
+      } catch (error) {
+        showToast('Error loading file. Please try again.', 'error');
+        console.error(error);
+      }
+    });
+
+    function filterA() {
+      if (!matches.length) {
+        showToast('Please upload a file first.', 'error');
+        return;
+      }
+      
+      filteredA = matches.filter(m => m.homeOdds < m.awayOdds && m.homeForm > m.awayForm)
+        .sort((a, b) => b.formDiff - a.formDiff); // Sort by form difference descending
+      renderTable(filteredA, 'filterAResults', 'accumA');
+      showToast(`Filter A applied: ${filteredA.length} matches found.`, 'success');
+    }
+
+    function filterSafest() {
+      if (!filteredA.length) {
+        showToast('Please apply Filter A first.', 'error');
+        return;
+      }
+      
+      filteredA = filteredA.filter(m => m.oddsDiff >= 2.5 && m.formDiff >= 1.1)
+        .sort((a, b) => b.formDiff - a.formDiff); // Sort by form difference descending
+      renderTable(filteredA, 'filterAResults', 'accumA');
+      showToast(`Safest matches filtered: ${filteredA.length} matches found.`, 'success');
+    }
+
+    function filterB() {
+      if (!matches.length) {
+        showToast('Please upload a file first.', 'error');
+        return;
+      }
+      
+      const threshold = parseFloat(document.getElementById('formDiff').value) || 0;
+      const startRaw = document.getElementById('startTime').value.trim();
+      const endRaw = document.getElementById('endTime').value.trim();
+      const startMins = parseTime(startRaw);
+      const endMins = parseTime(endRaw);
+
+      filteredB = matches.filter(m => {
+        const diff = Math.abs(m.homeForm - m.awayForm);
+        if (diff < threshold) return false;
+        const mins = parseTime(m.time);
+        if (startMins !== null && mins !== null && mins < startMins) return false;
+        if (endMins !== null && mins !== null && mins > endMins) return false;
+        const winningOdds = m.homeForm > m.awayForm ? m.homeOdds : m.awayForm > m.homeForm ? m.awayOdds : m.drawOdds;
+        return winningOdds && !isNaN(winningOdds) && winningOdds > 0;
+      }).sort((a, b) => b.formDiff - a.formDiff); // Sort by form difference descending
+      
+      renderTable(filteredB, 'filterBResults', 'accumB', true);
+      showToast(`Filter B applied: ${filteredB.length} matches found.`, 'success');
+    }
+
+    function parseTime(timeStr) {
+      const match = timeStr.match(/(\d{2})(\d{2})/);
+      if (match) {
+        return parseInt(match[1]) * 60 + parseInt(match[2]);
+      }
+      return null;
+    }
+
+    function renderTable(data, containerId, accumId, includeWinning = false) {
+      const container = document.getElementById(containerId);
+      
+      if (!data.length) {
+        container.innerHTML = `
+          <div class="no-results">
+            <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+            <p>No matches found matching your criteria.</p>
+          </div>
+        `;
+        document.getElementById(accumId).textContent = '';
+        return;
+      }
+      
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Time</th>
+              <th>Match</th>
+              <th>HomeForm</th>
+              <th>AwayForm</th>
+              <th>FormDiff</th>
+              <th>HomeOdds</th>
+              <th>AwayOdds</th>
+              <th>OddsDiff</th>
+      `;
+      
+      if (includeWinning) html += `<th>Winning Team</th><th>Winning Odds</th>`;
+      html += `<th>Action</th></tr></thead><tbody>`;
+      
+      let total = 1;
+      data.forEach((m, i) => {
+        total *= m.homeOdds;
+        const matchHTML = `<span class="highlight-home">${m.home}</span> vs ${m.away}`;
+        const rowClass = containerId === 'filterAResults' ? 'filter-a-row' : 'filter-b-row';
+        
+        html += `
+          <tr class="${rowClass}">
+            <td>${i+1}</td>
+            <td>${m.time}</td>
+            <td>${matchHTML}</td>
+            <td>${m.homeForm}</td>
+            <td>${m.awayForm}</td>
+            <td>${m.formDiff.toFixed(2)}</td>
+            <td>${m.homeOdds}</td>
+            <td>${m.awayOdds}</td>
+            <td>${m.oddsDiff.toFixed(2)}</td>
+        `;
+        
+        if (includeWinning) {
+          const winningTeam = m.homeForm > m.awayForm ? m.home : m.awayForm > m.homeForm ? m.away : 'Draw';
+          const winningOdds = winningTeam === m.home ? m.homeOdds : winningTeam === m.away ? m.awayOdds : m.drawOdds;
+          html += `<td>${winningTeam}</td><td>${winningOdds || 'N/A'}</td>`;
         }
+        
+        html += `
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-danger btn-sm" onclick="deleteMatch('${m.id}', '${containerId}')">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
       });
-      filterBtn.disabled = false;
-    });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+      
+      if (containerId === 'filterAResults') {
+        document.getElementById(accumId).textContent = `Accumulated Home Win Odds: ${total.toFixed(2)}x`;
+      } else {
+        document.getElementById(accumId).textContent = `Accumulated Winning Odds: ${total.toFixed(2)}x`;
+      }
+    }
 
-    filterBtn.addEventListener('click', () => {
-      filtered = matches
-        .filter(m => m.homeForm > 1.9 && m.homeOdds < m.awayOdds)
-        .map(m => {
-          const oddsDiff = Math.abs(m.homeOdds - m.awayOdds);
-          const valDiff = Math.abs(m.homeForm - m.awayForm);
-          return { ...m, oddsDiff, valDiff };
-        })
-        .sort((a, b) => b.homeForm - a.homeForm);
-      renderTable();
-      exportBtn.disabled = filtered.length === 0;
-    });
+    function deleteMatch(id, containerId) {
+      if (containerId === 'filterAResults') {
+        filteredA = filteredA.filter(m => m.id !== id);
+        renderTable(filteredA, 'filterAResults', 'accumA');
+        showToast('Match removed from Filter A.', 'info');
+      } else {
+        filteredB = filteredB.filter(m => m.id !== id);
+        renderTable(filteredB, 'filterBResults', 'accumB', true);
+        showToast('Match removed from Filter B.', 'info');
+      }
+    }
 
-    function renderTable() {
-      if (!filtered.length) {
-        resultWrap.innerHTML = '<em>No matches found.</em>';
-        totalOddsDiv.textContent = '';
+    function exportPNG(type) {
+      const isFilterA = type === 'A';
+      const data = isFilterA ? filteredA : filteredB;
+      
+      if (!data.length) {
+        showToast(`No data to export for Filter ${type}.`, 'error');
+        return;
+      }
+      
+      // Sort by form difference descending for export
+      const sortedData = [...data].sort((a, b) => b.formDiff - a.formDiff);
+      
+      const headerTitle = isFilterA ? 'Filter A - Home Win Form' : 'Filter B - Form & Time Filter';
+      const monthYear = new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+      const timestamp = new Date().toLocaleTimeString();
+
+      const tempContainer = document.createElement('div');
+      tempContainer.style.padding = '20px';
+      tempContainer.style.background = '#fff';
+      tempContainer.style.maxWidth = '800px';
+      tempContainer.style.margin = '0 auto';
+
+      const header = document.createElement('div');
+      header.className = 'png-header';
+      header.style.display = 'flex';
+      header.style.justifyContent = 'space-between';
+      header.style.alignItems = 'center';
+      header.style.marginBottom = '15px';
+      header.style.paddingBottom = '10px';
+      header.style.borderBottom = '1px solid #eee';
+      header.innerHTML = `
+        <div>
+          <div style="font-size: 18px; font-weight: bold; color: var(--primary);">${headerTitle}</div>
+          <div style="font-size: 14px; color: #666;">${uploadedFileName} - ${monthYear}</div>
+        </div>
+        <div style="font-size: 12px; color: #999;">Exported: ${timestamp}</div>
+      `;
+      tempContainer.appendChild(header);
+
+      const table = document.createElement('table');
+      table.style.width = '100%';
+      table.style.borderCollapse = 'collapse';
+      table.style.marginTop = '10px';
+      
+      table.innerHTML = `
+        <thead>
+          <tr style="background: var(--primary); color: white;">
+            <th style="padding: 10px; text-align: left;">#</th>
+            <th style="padding: 10px; text-align: left;">Time</th>
+            <th style="padding: 10px; text-align: left;">Match</th>
+            <th style="padding: 10px; text-align: left;">FormDiff</th>
+            <th style="padding: 10px; text-align: left;">HomeOdds</th>
+            <th style="padding: 10px; text-align: left;">AwayOdds</th>
+            <th style="padding: 10px; text-align: left;">Winning Team</th>
+            <th style="padding: 10px; text-align: left;">Winning Odds</th>
+          </tr>
+        </thead>
+      `;
+      
+      let tbody = '<tbody>';
+      let total = 1;
+
+      sortedData.forEach((m, i) => {
+        total *= m.homeOdds;
+        const winningTeam = m.homeForm > m.awayForm ? m.home : m.awayForm > m.homeForm ? m.away : 'Draw';
+        const winningOdds = winningTeam === m.home ? m.homeOdds : winningTeam === m.away ? m.awayOdds : m.drawOdds;
+        const rowColor = isFilterA ? 'background-color: #fef08a;' : 'background-color: #bfdbfe;';
+        
+        tbody += `
+          <tr style="${rowColor}">
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${i + 1}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${m.time}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">
+              <span style="font-weight: bold; color: var(--primary-dark);">${m.home}</span> vs ${m.away}
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">${m.formDiff.toFixed(2)}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${m.homeOdds}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${m.awayOdds}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${winningTeam}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${winningOdds || 'N/A'}</td>
+          </tr>
+        `;
+      });
+      
+      tbody += '</tbody>';
+      table.innerHTML += tbody;
+      tempContainer.appendChild(table);
+
+      const footer = document.createElement('div');
+      footer.style.marginTop = '15px';
+      footer.style.padding = '10px';
+      footer.style.backgroundColor = '#f8fafc';
+      footer.style.borderRadius = '6px';
+      footer.style.fontSize = '14px';
+      footer.style.display = 'flex';
+      footer.style.justifyContent = 'space-between';
+      footer.innerHTML = `
+        <div>
+          <span style="font-weight: bold;">Accumulated Odds:</span> ${total.toFixed(2)}x
+        </div>
+        <div style="color: #666;">
+          ${isFilterA ? 'Filter A (Yellow)' : 'Filter B (Blue)'}
+        </div>
+      `;
+      tempContainer.appendChild(footer);
+
+      document.body.appendChild(tempContainer);
+      
+      html2canvas(tempContainer, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        allowTaint: true
+      }).then(canvas => {
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `${headerTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.png`;
+        a.click();
+        document.body.removeChild(tempContainer);
+        showToast(`Filter ${type} exported successfully!`, 'success');
+      }).catch(err => {
+        document.body.removeChild(tempContainer);
+        showToast('Error exporting PNG. Please try again.', 'error');
+        console.error(err);
+      });
+    }
+
+    function exportCombinedPNG() {
+      // Merge and deduplicate, then sort by form difference descending
+      const merged = [...filteredA, ...filteredB].reduce((acc, obj) => {
+        if (!acc.some(e => e.id === obj.id)) acc.push(obj);
+        return acc;
+      }, []).sort((a, b) => b.formDiff - a.formDiff);
+
+      if (!merged.length) {
+        showToast('No data to export. Apply filters first.', 'error');
         return;
       }
 
-      const rows = filtered.map((f, i) => {
-        return `<tr>
-          <td>${i + 1}</td>
-          <td>${f.time || '-'}</td>
-          <td>${f.home}</td>
-          <td>${f.away}</td>
-          <td>${f.homeOdds}</td>
-          <td>${f.awayOdds}</td>
-          <td>${f.oddsDiff.toFixed(2)}</td>
-          <td>${f.homeForm}</td>
-          <td>${f.awayForm}</td>
-          <td>${f.valDiff.toFixed(2)}</td>
-          <td><button class="delete-btn" onclick="deleteMatch(${i})">Delete</button></td>
-        </tr>`;
-      }).join('');
+      const container = document.createElement('div');
+      container.style.padding = '20px';
+      container.style.background = '#fff';
+      container.style.maxWidth = '800px';
+      container.style.margin = '0 auto';
 
-      const tableHTML = `<table>
+      const header = document.createElement('div');
+      header.className = 'png-header';
+      header.style.display = 'flex';
+      header.style.justifyContent = 'space-between';
+      header.style.alignItems = 'center';
+      header.style.marginBottom = '15px';
+      header.style.paddingBottom = '10px';
+      header.style.borderBottom = '1px solid #eee';
+      
+      const monthYear = new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+      const timestamp = new Date().toLocaleTimeString();
+      
+      header.innerHTML = `
+        <div>
+          <div style="font-size: 18px; font-weight: bold; color: var(--primary);">Combined Filter Results</div>
+          <div style="font-size: 14px; color: #666;">${uploadedFileName} - ${monthYear}</div>
+        </div>
+        <div style="font-size: 12px; color: #999;">Exported: ${timestamp}</div>
+      `;
+      container.appendChild(header);
+
+      const table = document.createElement('table');
+      table.style.width = '100%';
+      table.style.borderCollapse = 'collapse';
+      table.style.marginTop = '10px';
+      
+      table.innerHTML = `
         <thead>
-          <tr>
-            <th>#</th><th>Time</th><th>Home</th><th>Away</th><th>Home Odds</th>
-            <th>Away Odds</th><th>Odds Diff</th><th>Home Form</th><th>Away Form</th><th>Value Diff</th><th>Delete</th>
+          <tr style="background: var(--primary); color: white;">
+            <th style="padding: 10px; text-align: left;">#</th>
+            <th style="padding: 10px; text-align: left;">Time</th>
+            <th style="padding: 10px; text-align: left;">Match</th>
+            <th style="padding: 10px; text-align: left;">FormDiff</th>
+            <th style="padding: 10px; text-align: left;">HomeOdds</th>
+            <th style="padding: 10px; text-align: left;">AwayOdds</th>
+            <th style="padding: 10px; text-align: left;">Winning Team</th>
+            <th style="padding: 10px; text-align: left;">Winning Odds</th>
           </tr>
-        </thead><tbody>${rows}</tbody></table>`;
+        </thead>
+      `;
+      
+      let tbody = '<tbody>';
+      let total = 1;
 
-      resultWrap.innerHTML = tableHTML;
-
-      const total = filtered.reduce((acc, match) => acc * match.homeOdds, 1).toFixed(2);
-      totalOddsDiv.textContent = `Accumulated Home Odds: ${total}`;
-    }
-
-    window.deleteMatch = function(index) {
-      filtered.splice(index, 1);
-      renderTable();
-      exportBtn.disabled = filtered.length === 0;
-    }
-
-    exportBtn.addEventListener('click', () => {
-      const wrap = document.createElement('div');
-      const today = new Date().toISOString().slice(0, 10);
-      const heading = document.createElement('h3');
-      heading.textContent = `HOME WINS - ${today}`;
-      heading.style.textAlign = 'center';
-      heading.style.color = '#007bff';
-      heading.style.marginBottom = '1rem';
-
-      const oddsPara = document.createElement('p');
-      const total = filtered.reduce((acc, match) => acc * match.homeOdds, 1).toFixed(2);
-      oddsPara.textContent = `Accumulated Home Odds: ${total}`;
-      oddsPara.style.textAlign = 'right';
-      oddsPara.style.marginTop = '1rem';
-      oddsPara.style.fontWeight = 'bold';
-      oddsPara.style.color = '#007bff';
-
-      wrap.appendChild(heading);
-      wrap.innerHTML += resultWrap.innerHTML;
-      wrap.appendChild(oddsPara);
-      wrap.style.padding = '1rem';
-      wrap.style.background = 'white';
-      document.body.appendChild(wrap);
-
-      html2canvas(wrap).then(canvas => {
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL();
-        a.download = `HOME_WINS_${today}.png`;
-        a.click();
-        document.body.removeChild(wrap);
+      merged.forEach((m, i) => {
+        total *= m.homeOdds;
+        const winningTeam = m.homeForm > m.awayForm ? m.home : m.awayForm > m.homeForm ? m.away : 'Draw';
+        const winningOdds = winningTeam === m.home ? m.homeOdds : winningTeam === m.away ? m.awayOdds : m.drawOdds;
+        const isFilterA = filteredA.some(f => f.id === m.id);
+        const rowColor = isFilterA ? 'background-color: #fef08a;' : 'background-color: #bfdbfe;';
+        
+        tbody += `
+          <tr style="${rowColor}">
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${i + 1}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${m.time}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">
+              <span style="font-weight: bold; color: var(--primary-dark);">${m.home}</span> vs ${m.away}
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">${m.formDiff.toFixed(2)}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${m.homeOdds}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${m.awayOdds}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${winningTeam}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${winningOdds || 'N/A'}</td>
+          </tr>
+        `;
       });
-    });
+      
+      tbody += '</tbody>';
+      table.innerHTML += tbody;
+      container.appendChild(table);
+
+      const footer = document.createElement('div');
+      footer.style.marginTop = '15px';
+      footer.style.padding = '10px';
+      footer.style.backgroundColor = '#f8fafc';
+      footer.style.borderRadius = '6px';
+      footer.style.fontSize = '14px';
+      footer.style.display = 'flex';
+      footer.style.justifyContent = 'space-between';
+      footer.innerHTML = `
+        <div>
+          <span style="font-weight: bold;">Accumulated Odds:</span> ${total.toFixed(2)}x
+        </div>
+        <div style="color: #666;">
+          <span style="display: inline-block; width: 12px; height: 12px; background: #fef08a; margin-right: 5px;"></span>Filter A
+          <span style="display: inline-block; width: 12px; height: 12px; background: #bfdbfe; margin: 0 5px 0 15px;"></span>Filter B
+        </div>
+      `;
+      container.appendChild(footer);
+
+      document.body.appendChild(container);
+      
+      html2canvas(container, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        allowTaint: true
+      }).then(canvas => {
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `Combined_Filter_Results_${new Date().toISOString().slice(0,10)}.png`;
+        a.click();
+        document.body.removeChild(container);
+        showToast('Combined results exported successfully!', 'success');
+      }).catch(err => {
+        document.body.removeChild(container);
+        showToast('Error exporting PNG. Please try again.', 'error');
+        console.error(err);
+      });
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.style.position = 'fixed';
+      toast.style.bottom = '20px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.padding = '12px 20px';
+      toast.style.borderRadius = '8px';
+      toast.style.color = 'white';
+      toast.style.fontWeight = '500';
+      toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+      toast.style.zIndex = '1000';
+      toast.style.transition = 'all 0.3s ease';
+      toast.style.opacity = '0';
+      
+      switch(type) {
+        case 'success':
+          toast.style.backgroundColor = '#10b981';
+          break;
+        case 'error':
+          toast.style.backgroundColor = '#ef4444';
+          break;
+        case 'info':
+          toast.style.backgroundColor = '#3b82f6';
+          break;
+        default:
+          toast.style.backgroundColor = '#3b82f6';
+      }
+      
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => { toast.style.opacity = '1'; }, 10);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => { document.body.removeChild(toast); }, 300);
+      }, 3000);
+    }
   </script>
 </body>
 </html>
