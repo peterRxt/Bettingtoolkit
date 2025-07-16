@@ -1,202 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>FootyStats</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>FOOTYSTATS FILTERED</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root {
-      --primary: #007bff;
-      --accent: #f8f9fa;
-      --danger: #dc3545;
-      --success: #28a745;
-      --border-radius: 10px;
-      --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
     body {
-      margin: 0;
-      font-family: var(--font);
-      background: #f4f7fa;
-      color: #333;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
       padding: 1rem;
     }
-
     .container {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
       max-width: 960px;
       margin: auto;
-      background: white;
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     h2 {
       text-align: center;
-      color: var(--primary);
-      margin-bottom: 1.5rem;
+      color: #007bff;
     }
-
-    .controls, .manual-controls {
+    .controls {
       display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      align-items: center;
       justify-content: center;
+      margin-bottom: 1rem;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
-
-    .controls input[type="file"],
-    .controls input,
-    .manual-controls input {
+    input[type="file"] {
       padding: 0.5rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: var(--border-radius);
-      min-width: 160px;
     }
-
-    label {
-      display: flex;
-      flex-direction: column;
-      font-size: 0.9rem;
-      color: #444;
-    }
-
     button {
-      background: var(--primary);
+      background: #28a745;
       color: white;
-      border: none;
       padding: 0.6rem 1rem;
-      font-size: 1rem;
-      border-radius: var(--border-radius);
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
-      transition: 0.3s ease;
     }
-
     button:hover {
-      background: #0056b3;
-    }
-
-    .export-btn {
-      background: var(--success);
-    }
-
-    .export-btn:hover {
       background: #1e7e34;
     }
-
-    .delete-btn {
-      background: var(--danger);
-    }
-
-    .delete-btn:hover {
-      background: #a71d2a;
-    }
-
-    .highlight-home-better {
-      background-color: #d8ecff !important;
-    }
-
-    .highlight-away-better {
-      background-color: #fff7cc !important;
-    }
-
-    .legend {
-      margin-top: 1rem;
-      margin-bottom: 1rem;
-      font-size: 0.95rem;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: var(--border-radius);
-      background: #fdfdfd;
-    }
-
-    .legend span {
-      display: inline-block;
-      padding: 0.3rem 0.6rem;
-      margin-right: 0.5rem;
-      border-radius: 5px;
-      color: #333;
-      font-weight: bold;
-    }
-
-    .home-color {
-      background-color: #d8ecff;
-    }
-
-    .away-color {
-      background-color: #fff7cc;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
-      font-size: 0.95rem;
     }
-
-    table th, table td {
-      padding: 0.75rem;
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.6rem;
       text-align: center;
-      border: 1px solid #ddd;
     }
-
-    table th {
-      background-color: var(--accent);
+    th {
+      background: #f0f0f0;
+    }
+    .highlight-row {
+      background-color: #d4edda !important; /* light green for safe odds diff */
+    }
+    .highlight-form {
+      background-color: #fff3cd !important; /* highlight form diff column */
       font-weight: bold;
     }
-
-    tr:nth-child(even) {
-      background: #f9f9f9;
+    .total-odds {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: right;
     }
-
-    @media (max-width: 600px) {
-      .controls, .manual-controls {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      table {
-        font-size: 0.85rem;
-      }
-
-      table th, table td {
-        padding: 0.5rem;
-      }
-
-      button {
-        width: 100%;
-      }
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background: #a71d2a;
+    }
+    .export-header, .export-footer {
+      text-align: center;
+      margin: 10px 0;
+      font-weight: bold;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1"></script>
 </head>
 <body>
   <div class="container">
-    <h2>FOOTYSTATS</h2>
-    <h2>ODDD DIFF=10</H2>
-    <h2>VALUE DIFF= 0.2</h2>
-    <div class="legend">
-      <span class="home-color">Blue: Home has higher odds & form</span>
-      <span class="away-color">Yellow: Away has higher odds & form</span>
-    </div>
+    <h2>FOOTYSTATS - Filtered Matches</h2>
     <div class="controls">
-      <input type="file" id="htmlInput" accept=".html,.htm">
-      <label>Odds Diff (≥): <input type="number" id="oddsDiffInput" value="0" step="0.01"></label>
-      <label>Value Diff (≤): <input type="number" id="valDiffInput" value="0" step="0.01"></label>
-      <button id="filterBtn" disabled>Filter</button>
-      <button class="export-btn" id="exportBtn" disabled>Export PNG</button>
+      <input type="file" id="htmlInput" accept=".html,.htm" />
+      <button id="filterBtn" disabled>Filter Matches</button>
+      <button id="exportBtn" disabled>Export PNG</button>
     </div>
     <div id="result-wrap"></div>
+    <div class="total-odds" id="totalOdds"></div>
   </div>
 
   <script>
     const htmlInput = document.getElementById('htmlInput');
     const filterBtn = document.getElementById('filterBtn');
     const exportBtn = document.getElementById('exportBtn');
-    const oddsDiffInput = document.getElementById('oddsDiffInput');
-    const valDiffInput = document.getElementById('valDiffInput');
     const resultWrap = document.getElementById('result-wrap');
+    const totalOddsDiv = document.getElementById('totalOdds');
     let matches = [], filtered = [];
 
     htmlInput.addEventListener('change', async (e) => {
@@ -206,21 +114,26 @@
       const doc = new DOMParser().parseFromString(text, 'text/html');
       const nodes = doc.querySelectorAll('a.match.row');
       matches = [];
+
       nodes.forEach(match => {
         const home = match.querySelector('.team.home span')?.textContent.trim();
         const away = match.querySelector('.team.away span')?.textContent.trim();
         const homeForm = parseFloat(match.querySelector('.team.home .form-box')?.textContent.trim() || 0);
         const awayForm = parseFloat(match.querySelector('.team.away .form-box')?.textContent.trim() || 0);
+        const time = match.querySelector('.time')?.textContent.trim() || 'N/A';
         const odds = match.querySelectorAll('.stat.odds');
         const nums = Array.from(odds).map(o => o.textContent.match(/\d+(\.\d+)?/g)).flat().filter(Boolean);
         if (nums.length >= 3) {
           matches.push({
             home,
             away,
+            time,
             homeForm,
             awayForm,
+            formDiff: Math.abs(homeForm - awayForm),
             homeOdds: parseFloat(nums[0]),
-            awayOdds: parseFloat(nums[2])
+            awayOdds: parseFloat(nums[2]),
+            oddsDiff: Math.abs(parseFloat(nums[0]) - parseFloat(nums[2]))
           });
         }
       });
@@ -228,61 +141,77 @@
     });
 
     filterBtn.addEventListener('click', () => {
-      const oddsThres = parseFloat(oddsDiffInput.value);
-      const valThres = parseFloat(valDiffInput.value);
-      filtered = matches.map(m => {
-        const oddsDiff = Math.abs(m.homeOdds - m.awayOdds);
-        const valDiff = Math.abs(m.homeForm - m.awayForm);
-        return { ...m, oddsDiff, valDiff };
-      }).filter(m => m.oddsDiff >= oddsThres || m.valDiff <= valThres)
-        .sort((a, b) => b.oddsDiff - a.oddsDiff); // Sort by descending odds difference
+      filtered = matches.filter(m => m.homeOdds < m.awayOdds && m.homeForm > m.awayForm)
+        .sort((a, b) => b.formDiff - a.formDiff);
       renderTable();
       exportBtn.disabled = filtered.length === 0;
     });
 
     function renderTable() {
-      if (!filtered.length) return resultWrap.innerHTML = '<em>No matches found.</em>';
-      const rows = filtered.map((f, i) => {
-        const className = f.homeOdds > f.awayOdds && f.homeForm > f.awayForm ? 'highlight-home-better'
-                        : f.awayOdds > f.homeOdds && f.awayForm > f.homeForm ? 'highlight-away-better' : '';
-        return `<tr class="${className}">
+      if (!filtered.length) {
+        resultWrap.innerHTML = "<em>No matches found.</em>";
+        totalOddsDiv.textContent = '';
+        return;
+      }
+
+      const rows = filtered.map((m, i) => {
+        const rowClass = m.oddsDiff >= 2.5 ? "highlight-row" : "";
+        return `<tr class="${rowClass}">
           <td>${i + 1}</td>
-          <td>${f.home}</td>
-          <td>${f.away}</td>
-          <td>${f.homeOdds}</td>
-          <td>${f.awayOdds}</td>
-          <td>${f.oddsDiff.toFixed(2)}</td>
-          <td>${f.homeForm}</td>
-          <td>${f.awayForm}</td>
-          <td>${f.valDiff.toFixed(2)}</td>
+          <td>${m.time}</td>
+          <td>${m.home} vs ${m.away}</td>
+          <td>${m.homeForm}</td>
+          <td>${m.awayForm}</td>
+          <td class="highlight-form">${m.formDiff.toFixed(2)}</td>
+          <td>${m.homeOdds}</td>
+          <td>${m.awayOdds}</td>
+          <td>${m.oddsDiff.toFixed(2)}</td>
           <td><button class="delete-btn" onclick="deleteMatch(${i})">Delete</button></td>
         </tr>`;
       }).join('');
-      resultWrap.innerHTML = `<table>
-        <thead>
-          <tr>
-            <th>#</th><th>Home</th><th>Away</th><th>Home Odds</th><th>Away Odds</th>
-            <th>Odds Diff</th><th>Home Form</th><th>Away Form</th><th>Value Diff</th><th>Delete</th>
-          </tr>
-        </thead><tbody>${rows}</tbody></table>`;
+
+      resultWrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Time</th><th>Teams</th><th>Home Form</th><th>Away Form</th>
+              <th>Form Diff</th><th>Home Odds</th><th>Away Odds</th><th>Odds Diff</th><th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+
+      const total = filtered.reduce((acc, m) => acc * m.homeOdds, 1).toFixed(2);
+      totalOddsDiv.textContent = `Accumulated Home Odds: ${total}`;
     }
 
     window.deleteMatch = function(index) {
       filtered.splice(index, 1);
       renderTable();
-      exportBtn.disabled = filtered.length === 0;
-    }
+    };
 
     exportBtn.addEventListener('click', () => {
       const wrap = document.createElement('div');
-      wrap.innerHTML = document.querySelector('.legend').outerHTML + resultWrap.innerHTML;
-      wrap.style.padding = '1rem';
+
+      const times = filtered.map(m => m.time).filter(t => t !== 'N/A');
+      const dateHeader = times.length ? `Date(s): ${[...new Set(times)].join(', ')}` : '';
+      const timestamp = new Date().toLocaleString();
+
+      wrap.innerHTML = `
+        <div class="export-header"><h3>HOME WINS</h3><p>${dateHeader}</p></div>
+        ${resultWrap.innerHTML}
+        <div class="total-odds">${totalOddsDiv.textContent}</div>
+        <div class="export-footer">Generated on ${timestamp}</div>
+      `;
       wrap.style.background = 'white';
+      wrap.style.padding = '1rem';
       document.body.appendChild(wrap);
+
       html2canvas(wrap).then(canvas => {
         const a = document.createElement('a');
         a.href = canvas.toDataURL();
-        a.download = `filtered_matches_${Date.now()}.png`;
+        a.download = `home_wins_filtered_${Date.now()}.png`;
         a.click();
         document.body.removeChild(wrap);
       });
