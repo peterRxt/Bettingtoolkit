@@ -352,6 +352,17 @@
       color: white;
     }
     
+    .combined-accumulated {
+      background: var(--light);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-weight: 600;
+      color: var(--primary-dark);
+      margin-top: 15px;
+      display: inline-block;
+      border: 1px solid var(--light-gray);
+    }
+    
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -515,6 +526,7 @@
         <i class="fas fa-file-export"></i> Export Combined Results
       </button>
     </div>
+    <div class="combined-accumulated" id="combinedAccum"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1"></script>
@@ -535,6 +547,12 @@
         doc.querySelectorAll('a.match.row').forEach(match => {
           const home = match.querySelector('.team.home span')?.textContent.trim();
           const away = match.querySelector('.team.away span')?.textContent.trim();
+          
+          // Skip matches with brackets in team names
+          if (home.includes('(') || home.includes(')') || away.includes('(') || away.includes(')')) {
+            return;
+          }
+          
           const homeForm = parseFloat(match.querySelector('.team.home .form-box')?.textContent.trim() || '0');
           const awayForm = parseFloat(match.querySelector('.team.away .form-box')?.textContent.trim() || '0');
           const time = match.querySelector('.time')?.textContent.trim() || 'N/A';
@@ -555,6 +573,7 @@
         });
         
         showToast(`${matches.length} matches loaded successfully!`, 'success');
+        updateCombinedAccumulated();
       } catch (error) {
         showToast('Error loading file. Please try again.', 'error');
         console.error(error);
@@ -571,6 +590,7 @@
         .sort((a, b) => b.formDiff - a.formDiff); // Sort by form difference descending
       renderTable(filteredA, 'filterAResults', 'accumA');
       showToast(`Filter A applied: ${filteredA.length} matches found.`, 'success');
+      updateCombinedAccumulated();
     }
 
     function filterSafest() {
@@ -583,6 +603,7 @@
         .sort((a, b) => b.formDiff - a.formDiff); // Sort by form difference descending
       renderTable(filteredA, 'filterAResults', 'accumA');
       showToast(`Safest matches filtered: ${filteredA.length} matches found.`, 'success');
+      updateCombinedAccumulated();
     }
 
     function filterB() {
@@ -609,6 +630,7 @@
       
       renderTable(filteredB, 'filterBResults', 'accumB', true);
       showToast(`Filter B applied: ${filteredB.length} matches found.`, 'success');
+      updateCombinedAccumulated();
     }
 
     function parseTime(timeStr) {
@@ -630,6 +652,7 @@
           </div>
         `;
         document.getElementById(accumId).textContent = '';
+        updateCombinedAccumulated();
         return;
       }
       
@@ -653,7 +676,10 @@
       
       let total = 1;
       data.forEach((m, i) => {
-        total *= m.homeOdds;
+        const oddsToMultiply = containerId === 'filterAResults' ? m.homeOdds : 
+                             (m.homeForm > m.awayForm ? m.homeOdds : m.awayOdds);
+        total *= oddsToMultiply;
+        
         const matchHTML = `<span class="highlight-home">${m.home}</span> vs ${m.away}`;
         const rowClass = containerId === 'filterAResults' ? 'filter-a-row' : 'filter-b-row';
         
@@ -696,6 +722,33 @@
       } else {
         document.getElementById(accumId).textContent = `Accumulated Winning Odds: ${total.toFixed(2)}x`;
       }
+      
+      updateCombinedAccumulated();
+    }
+
+    function updateCombinedAccumulated() {
+      // Get unique matches from both filters
+      const combinedMatches = [...filteredA, ...filteredB].reduce((acc, obj) => {
+        if (!acc.some(e => e.id === obj.id)) acc.push(obj);
+        return acc;
+      }, []);
+      
+      if (combinedMatches.length === 0) {
+        document.getElementById('combinedAccum').textContent = '';
+        return;
+      }
+      
+      // Calculate combined odds (using home odds for Filter A matches, winning odds for Filter B matches)
+      let combinedTotal = 1;
+      combinedMatches.forEach(m => {
+        const isFilterA = filteredA.some(f => f.id === m.id);
+        const oddsToMultiply = isFilterA ? m.homeOdds : 
+                             (m.homeForm > m.awayForm ? m.homeOdds : m.awayOdds);
+        combinedTotal *= oddsToMultiply;
+      });
+      
+      document.getElementById('combinedAccum').textContent = 
+        `Combined Accumulated Odds: ${combinedTotal.toFixed(2)}x (${combinedMatches.length} matches)`;
     }
 
     function deleteMatch(id, containerId) {
@@ -708,6 +761,7 @@
         renderTable(filteredB, 'filterBResults', 'accumB', true);
         showToast('Match removed from Filter B.', 'info');
       }
+      updateCombinedAccumulated();
     }
 
     function exportPNG(type) {
@@ -773,7 +827,10 @@
       let total = 1;
 
       sortedData.forEach((m, i) => {
-        total *= m.homeOdds;
+        const oddsToMultiply = isFilterA ? m.homeOdds : 
+                             (m.homeForm > m.awayForm ? m.homeOdds : m.awayOdds);
+        total *= oddsToMultiply;
+        
         const winningTeam = m.homeForm > m.awayForm ? m.home : m.awayForm > m.homeForm ? m.away : 'Draw';
         const winningOdds = winningTeam === m.home ? m.homeOdds : winningTeam === m.away ? m.awayOdds : m.drawOdds;
         const rowColor = isFilterA ? 'background-color: #fef08a;' : 'background-color: #bfdbfe;';
@@ -808,7 +865,7 @@
       footer.style.justifyContent = 'space-between';
       footer.innerHTML = `
         <div>
-          <span style="font-weight: bold;">Accumulated Odds:</span> ${total.toFixed(2)}x
+          <span style="font-weight: bold;">Accumulated Odds:</span> ${total.toFixed(2)}x (${sortedData.length} matches)
         </div>
         <div style="color: #666;">
           ${isFilterA ? 'Filter A (Yellow)' : 'Filter B (Blue)'}
@@ -892,19 +949,30 @@
             <th style="padding: 10px; text-align: left;">AwayOdds</th>
             <th style="padding: 10px; text-align: left;">Winning Team</th>
             <th style="padding: 10px; text-align: left;">Winning Odds</th>
+            <th style="padding: 10px; text-align: left;">Filter</th>
           </tr>
         </thead>
       `;
       
       let tbody = '<tbody>';
-      let total = 1;
+      let totalA = 1;
+      let totalB = 1;
+      let combinedTotal = 1;
 
       merged.forEach((m, i) => {
-        total *= m.homeOdds;
+        const isFilterA = filteredA.some(f => f.id === m.id);
+        const isFilterB = filteredB.some(f => f.id === m.id);
+        const oddsToMultiply = isFilterA ? m.homeOdds : 
+                             (m.homeForm > m.awayForm ? m.homeOdds : m.awayOdds);
+        
+        combinedTotal *= oddsToMultiply;
+        if (isFilterA) totalA *= m.homeOdds;
+        if (isFilterB) totalB *= (m.homeForm > m.awayForm ? m.homeOdds : m.awayOdds);
+        
         const winningTeam = m.homeForm > m.awayForm ? m.home : m.awayForm > m.homeForm ? m.away : 'Draw';
         const winningOdds = winningTeam === m.home ? m.homeOdds : winningTeam === m.away ? m.awayOdds : m.drawOdds;
-        const isFilterA = filteredA.some(f => f.id === m.id);
         const rowColor = isFilterA ? 'background-color: #fef08a;' : 'background-color: #bfdbfe;';
+        const filterType = isFilterA ? 'A' : 'B';
         
         tbody += `
           <tr style="${rowColor}">
@@ -918,6 +986,7 @@
             <td style="padding: 10px; border-bottom: 1px solid #eee;">${m.awayOdds}</td>
             <td style="padding: 10px; border-bottom: 1px solid #eee;">${winningTeam}</td>
             <td style="padding: 10px; border-bottom: 1px solid #eee;">${winningOdds || 'N/A'}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${filterType}</td>
           </tr>
         `;
       });
@@ -928,17 +997,26 @@
 
       const footer = document.createElement('div');
       footer.style.marginTop = '15px';
-      footer.style.padding = '10px';
+      footer.style.padding = '15px';
       footer.style.backgroundColor = '#f8fafc';
       footer.style.borderRadius = '6px';
       footer.style.fontSize = '14px';
-      footer.style.display = 'flex';
-      footer.style.justifyContent = 'space-between';
+      
       footer.innerHTML = `
-        <div>
-          <span style="font-weight: bold;">Accumulated Odds:</span> ${total.toFixed(2)}x
+        <div style="margin-bottom: 10px; font-weight: bold;">Accumulated Odds Summary</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <div>Filter A (Home Wins):</div>
+          <div style="font-weight: bold;">${totalA.toFixed(2)}x (${filteredA.length} matches)</div>
         </div>
-        <div style="color: #666;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <div>Filter B (Winning Team):</div>
+          <div style="font-weight: bold;">${totalB.toFixed(2)}x (${filteredB.length} matches)</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
+          <div>Combined Total:</div>
+          <div style="font-weight: bold; color: var(--primary-dark);">${combinedTotal.toFixed(2)}x (${merged.length} matches)</div>
+        </div>
+        <div style="margin-top: 15px; color: #666; font-size: 12px; display: flex; align-items: center;">
           <span style="display: inline-block; width: 12px; height: 12px; background: #fef08a; margin-right: 5px;"></span>Filter A
           <span style="display: inline-block; width: 12px; height: 12px; background: #bfdbfe; margin: 0 5px 0 15px;"></span>Filter B
         </div>
